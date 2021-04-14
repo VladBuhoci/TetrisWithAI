@@ -46,6 +46,10 @@ public class Zigzag extends Shape {
 
     private final Map<Orientation, List<Position>> occupiedCellPositions = new HashMap<>(4);
 
+    public Zigzag() {
+        this(Orientation.UP);
+    }
+
     public Zigzag(Orientation initialOrientation) {
         super(initialOrientation);
 

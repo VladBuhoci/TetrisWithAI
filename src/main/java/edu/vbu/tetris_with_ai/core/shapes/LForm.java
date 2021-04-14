@@ -46,6 +46,10 @@ public class LForm extends Shape {
 
     private final Map<Orientation, List<Position>> occupiedCellPositions = new HashMap<>(4);
 
+    public LForm() {
+        this(Orientation.UP);
+    }
+
     public LForm(Orientation initialOrientation) {
         super(initialOrientation);
 

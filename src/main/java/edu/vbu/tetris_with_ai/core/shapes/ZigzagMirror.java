@@ -46,6 +46,10 @@ public class ZigzagMirror extends Shape {
 
     private final Map<Orientation, List<Position>> occupiedCellPositions = new HashMap<>(4);
 
+    public ZigzagMirror() {
+        this(Orientation.UP);
+    }
+
     public ZigzagMirror(Orientation initialOrientation) {
         super(initialOrientation);
 

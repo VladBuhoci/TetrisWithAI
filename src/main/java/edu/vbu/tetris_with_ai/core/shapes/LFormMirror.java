@@ -46,6 +46,10 @@ public class LFormMirror extends Shape {
 
     private final Map<Orientation, List<Position>> occupiedCellPositions = new HashMap<>(4);
 
+    public LFormMirror() {
+        this(Orientation.UP);
+    }
+
     public LFormMirror(Orientation initialOrientation) {
         super(initialOrientation);
 

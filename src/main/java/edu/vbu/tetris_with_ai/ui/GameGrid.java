@@ -7,7 +7,9 @@ import edu.vbu.tetris_with_ai.utils.VoidFunctionNoArg;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class GameGrid extends JPanel {
 
@@ -32,7 +34,6 @@ public class GameGrid extends JPanel {
             for (int j = 0; j < cellCountOnX; j++) {
                 JPanel cell = new JPanel();
                 cell.setBackground(EMPTY_CELL_COLOUR);
-//                cell.setBackground(Color.getHSBColor(i + j, i - j + 0.1f, i + j + 0.7f));
 
                 gridCells[i][j] = cell;
                 add(cell);
@@ -41,14 +42,19 @@ public class GameGrid extends JPanel {
     }
 
     public void setCurrentFallingPiece(Shape fallingPiece) {
-        if (this.currFallPiece != fallingPiece) {
+        if (currFallPiece != fallingPiece) {
+            if (currFallPiece != null) {
+                // Darken the now-abandoned piece (to easily distinguish between static pieces and the falling one + collision detection is partially based on colours!!).
+                determineCellColoursForFallingPieceForced(currFallPiece.getColour().darker());
+            }
+
             resetFallingPiece(fallingPiece);
             determineCellColoursForFallingPiece(currFallPiece.getColour());
         }
     }
 
     public void movePieceDownOneRow() {
-        if (currFallPiece != null && !isPieceTouchingBottom() /*TODO: and other -physical- conditions*/) {
+        if (currFallPiece != null && !isPieceCollidingBottom()) {
             determineCellColoursForFallingPiece(EMPTY_CELL_COLOUR);
             movePieceVerticallyInternal(+1);
             determineCellColoursForFallingPiece(currFallPiece.getColour());
@@ -56,7 +62,7 @@ public class GameGrid extends JPanel {
     }
 
     public void movePieceLeftOneColumn() {
-        if (currFallPiece != null && !isPieceTouchingLeftWall() /*TODO: and other -physical- conditions*/) {
+        if (currFallPiece != null && !isPieceTouchingLeftWall() && !isPieceTouchingOtherPieceLeft()) {
             determineCellColoursForFallingPiece(EMPTY_CELL_COLOUR);
             movePieceHorizontallyInternal(-1);
             determineCellColoursForFallingPiece(currFallPiece.getColour());
@@ -64,7 +70,7 @@ public class GameGrid extends JPanel {
     }
 
     public void movePieceRightOneColumn() {
-        if (currFallPiece != null && !isPieceTouchingRightWall() /*TODO: and other -physical- conditions*/) {
+        if (currFallPiece != null && !isPieceTouchingRightWall() && !isPieceTouchingOtherPieceRight()) {
             determineCellColoursForFallingPiece(EMPTY_CELL_COLOUR);
             movePieceHorizontallyInternal(+1);
             determineCellColoursForFallingPiece(currFallPiece.getColour());
@@ -72,11 +78,15 @@ public class GameGrid extends JPanel {
     }
 
     public void rotatePieceLeftOnce() {
-        rotatePieceOnceInternal(() -> currFallPiece.rotateLeft());
+        rotatePieceOnceInternal(() -> currFallPiece.rotateLeft(), () -> currFallPiece.rotateRight());
     }
 
     public void rotatePieceRightOnce() {
-        rotatePieceOnceInternal(() -> currFallPiece.rotateRight());
+        rotatePieceOnceInternal(() -> currFallPiece.rotateRight(), () -> currFallPiece.rotateLeft());
+    }
+
+    public boolean isPieceCollidingBottom() {
+        return isPieceTouchingFloor() || isPieceTouchingOtherPieceDown();
     }
 
     private void resetFallingPiece(@Nullable Shape newFallingPiece) {
@@ -85,15 +95,35 @@ public class GameGrid extends JPanel {
         this.fallingPieceColumnIndex = gridCells[0].length / 2 - 1; // new piece starts in the middle of the horizontal line.
     }
 
-    private void determineCellColoursForFallingPiece(Color newColour) {
-        currFallPiece.getOccupiedCellPositions().forEach(pos -> gridCells[fallingPieceRowIndex + pos.getPosX()][fallingPieceColumnIndex + pos.getPosY()].setBackground(newColour));
+    private void determineCellColoursForFallingPiece(Color newColour) throws IllegalStateException {
+        determineCellColoursForFallingPiece(newColour, false);
+    }
+
+    private void determineCellColoursForFallingPieceForced(Color newColour) throws IllegalStateException {
+        determineCellColoursForFallingPiece(newColour, true);
+    }
+
+    private void determineCellColoursForFallingPiece(Color newColour, boolean forceRecolouring) throws IllegalStateException {
+        Map<JPanel, Color> previousCellColours = new HashMap<>(4);
+
+        currFallPiece.getOccupiedCellPositions().forEach(pos -> {
+            JPanel cell = gridCells[fallingPieceRowIndex + pos.getPosX()][fallingPieceColumnIndex + pos.getPosY()];
+            previousCellColours.put(cell, cell.getBackground());
+
+            if (!forceRecolouring && cell.getBackground() != EMPTY_CELL_COLOUR && newColour != EMPTY_CELL_COLOUR) {
+                previousCellColours.keySet().forEach(prevCellState -> prevCellState.setBackground(previousCellColours.get(prevCellState)));
+                throw new IllegalStateException("Trying to recolour an already coloured cell");
+            }
+
+            cell.setBackground(newColour);
+        });
     }
 
     ////////////////////////////////////////////////////////////////////////////////
     // Collisions:
     ////////////////////////////////////////////////////////////////////////////////
 
-    private static enum CollisionLocation {
+    private enum CollisionLocation {
         NONE,
         TOP,
         LEFT,
@@ -101,13 +131,51 @@ public class GameGrid extends JPanel {
         BOTTOM
     }
 
-    private boolean isPieceTouchingBottom() {
+    private boolean isPieceTouchingFloor() {
         assertCurrentPieceNotNull();
 
         List<Position> occupiedCellPositions = currFallPiece.getOccupiedCellPositions();
 
         for (Position pos : occupiedCellPositions) {
             if (fallingPieceRowIndex + pos.getPosX() == gridCells.length - 1) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isPieceTouchingOtherPieceDown() {
+        assertCurrentPieceNotNull();
+
+        List<Position> occupiedCellPositions = currFallPiece.getOccupiedCellPositions();
+
+        for (Position pos : occupiedCellPositions) {
+            int currentPiecePosX = fallingPieceRowIndex + pos.getPosX();
+            int currentPiecePosY = fallingPieceColumnIndex + pos.getPosY();
+
+            if (currentPiecePosX < gridCells.length - 1
+                    && gridCells[currentPiecePosX + 1][currentPiecePosY].getBackground() != EMPTY_CELL_COLOUR
+                    && gridCells[currentPiecePosX + 1][currentPiecePosY].getBackground() != currFallPiece.getColour()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isPieceTouchingOtherPieceLeft() {
+        assertCurrentPieceNotNull();
+
+        List<Position> occupiedCellPositions = currFallPiece.getOccupiedCellPositions();
+
+        for (Position pos : occupiedCellPositions) {
+            int currentPiecePosX = fallingPieceRowIndex + pos.getPosX();
+            int currentPiecePosY = fallingPieceColumnIndex + pos.getPosY();
+
+            if (currentPiecePosY > 0
+                    && gridCells[currentPiecePosX][currentPiecePosY - 1].getBackground() != EMPTY_CELL_COLOUR
+                    && gridCells[currentPiecePosX][currentPiecePosY - 1].getBackground() != currFallPiece.getColour()) {
                 return true;
             }
         }
@@ -130,6 +198,25 @@ public class GameGrid extends JPanel {
     }
 
     private boolean isPieceTouchingRightWall() {
+        assertCurrentPieceNotNull();
+
+        List<Position> occupiedCellPositions = currFallPiece.getOccupiedCellPositions();
+
+        for (Position pos : occupiedCellPositions) {
+            int currentPiecePosX = fallingPieceRowIndex + pos.getPosX();
+            int currentPiecePosY = fallingPieceColumnIndex + pos.getPosY();
+
+            if (currentPiecePosY < gridCells[0].length - 1
+                    && gridCells[currentPiecePosX][currentPiecePosY + 1].getBackground() != EMPTY_CELL_COLOUR
+                    && gridCells[currentPiecePosX][currentPiecePosY + 1].getBackground() != currFallPiece.getColour()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isPieceTouchingOtherPieceRight() {
         assertCurrentPieceNotNull();
 
         List<Position> occupiedCellPositions = currFallPiece.getOccupiedCellPositions();
@@ -166,12 +253,13 @@ public class GameGrid extends JPanel {
         return CollisionLocation.NONE;
     }
 
-    // TODO: W.I.P.
-    private boolean isPieceOverlappingWithOtherPiece() {
-        assertCurrentPieceNotNull();
-
-        return false;
-    }
+//    private boolean isPieceOverlappingWithOtherPiece() {
+//        assertCurrentPieceNotNull();
+//
+//        ERROR
+//
+//        return false;
+//    }
 
     ////////////////////////////////////////////////////////////////////////////////
     // Utils:
@@ -185,47 +273,52 @@ public class GameGrid extends JPanel {
         fallingPieceColumnIndex += delta;
     }
 
-    private void rotatePieceOnceInternal(VoidFunctionNoArg rotationImplementation) {
-        if (currFallPiece != null /*TODO: and other -physical- conditions (??)*/) {
+    private void rotatePieceOnceInternal(VoidFunctionNoArg rotationImplementation, VoidFunctionNoArg rollbackImplementation) {
+        if (currFallPiece != null) {
             determineCellColoursForFallingPiece(EMPTY_CELL_COLOUR);
 
-            if (true) { // TODO: other conditions?
-                // Test collision with left, right and bottom sides after applying the rotation.
-                // If colliding with a wall or an object, forcefully translate the current piece in the opposite direction.
+            // Test collision with left, right and bottom sides after applying the rotation.
+            // If colliding with a wall, forcefully translate the current piece in the opposite direction.
 
-                rotationImplementation.call();
+            rotationImplementation.call();
 
-                boolean isPieceOutside = true;
+            boolean isPieceOutside = true;
 
-                do {
-                    switch (isPiecePartiallyOutsideGrid()) {
-                        case TOP:
-                            movePieceVerticallyInternal(+1);
-                            break;
+            do {
+                switch (isPiecePartiallyOutsideGrid()) {
+                    case TOP:
+                        movePieceVerticallyInternal(+1);
+                        break;
 
-                        case LEFT:
-                            movePieceHorizontallyInternal(+1);
-                            break;
+                    case LEFT:
+                        movePieceHorizontallyInternal(+1);
+                        break;
 
-                        case RIGHT:
-                            movePieceHorizontallyInternal(-1);
-                            break;
+                    case RIGHT:
+                        movePieceHorizontallyInternal(-1);
+                        break;
 
-                        case BOTTOM:
-                            movePieceVerticallyInternal(-1);
-                            break;
+                    case BOTTOM:
+                        movePieceVerticallyInternal(-1);
+                        break;
 
-                        case NONE:
-                        default:
-                            isPieceOutside = false;
-                            break;
-                    }
-                } while (isPieceOutside);
+                    case NONE:
+                    default:
+                        isPieceOutside = false;
+                        break;
+                }
+            } while (isPieceOutside);
 
-                // TODO: another check for collisions with other pieces.
+//            if (isPieceOverlappingWithOtherPiece()) {
+//                rollbackImplementation.call();
+//            }
+
+            try {
+                determineCellColoursForFallingPiece(currFallPiece.getColour());
+            } catch (IllegalStateException e) {
+                rollbackImplementation.call();
+                determineCellColoursForFallingPiece(currFallPiece.getColour());
             }
-
-            determineCellColoursForFallingPiece(currFallPiece.getColour());
         }
     }
 

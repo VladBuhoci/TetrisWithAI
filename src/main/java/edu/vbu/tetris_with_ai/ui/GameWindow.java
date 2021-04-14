@@ -1,8 +1,7 @@
 package edu.vbu.tetris_with_ai.ui;
 
-import edu.vbu.tetris_with_ai.core.Orientation;
-import edu.vbu.tetris_with_ai.core.shapes.LFormMirror;
 import edu.vbu.tetris_with_ai.core.shapes.Shape;
+import edu.vbu.tetris_with_ai.core.shapes.Shapes;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -58,14 +57,6 @@ public class GameWindow extends JFrame {
                     dispose();
                 }
 
-                // TODO: testing only
-                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-                    LOG.warn("Spawning dev shape");
-                    Shape devShape = new LFormMirror(Orientation.UP);
-
-                    gameGrid.setCurrentFallingPiece(devShape);
-                }
-
                 if (e.getKeyCode() == KeyEvent.VK_DOWN) {
                     gameGrid.movePieceDownOneRow();
                 }
@@ -81,6 +72,10 @@ public class GameWindow extends JFrame {
                 }
                 if (e.getKeyCode() == KeyEvent.VK_UP) {
                     gameGrid.rotatePieceRightOnce();
+                }
+
+                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+                    // TODO: drop the current piece all the way down.
                 }
             }
 
@@ -110,9 +105,7 @@ public class GameWindow extends JFrame {
         gameStats.setBackground(Color.black);//green);
         gameStats.setPreferredSize(new Dimension((int) (WINDOW_WIDTH * WEST_SPACE_WIDTH_PERCENTAGE), WINDOW_HEIGHT));
 
-        JPanel gameFuture = new JPanel(true);
-        gameFuture.setBackground(Color.red);
-        gameFuture.setPreferredSize(new Dimension((int) (WINDOW_WIDTH * EAST_SPACE_WIDTH_PERCENTAGE), WINDOW_HEIGHT));
+        JPanel gameFuture = createFuturePiecePanel();
 
         JPanel topSideFiller = new JPanel();
         topSideFiller.setBackground(mainPanelColour);
@@ -131,7 +124,75 @@ public class GameWindow extends JFrame {
         return mainPanel;
     }
 
+    private JPanel createFuturePiecePanel() {
+        JPanel gameFuture = new JPanel(true);
+        gameFuture.setBackground(Color.red);
+        gameFuture.setPreferredSize(new Dimension((int) (WINDOW_WIDTH * EAST_SPACE_WIDTH_PERCENTAGE), WINDOW_HEIGHT));
+        gameFuture.setLayout(new BoxLayout(gameFuture, BoxLayout.Y_AXIS));
+
+        gameFuture.add(new UpcomingPieceComponent(Color.red));
+        gameFuture.add(new UpcomingPieceComponent(Color.yellow));
+        gameFuture.add(new UpcomingPieceComponent(Color.pink));
+
+        return gameFuture;
+    }
+
+
     public void start() {
         setVisible(true);
+        startGameThread();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // Game flow
+    ////////////////////////////////////////////////////////////////////////////////
+
+    private void startGameThread() {
+        // Initial piece.
+        gameGrid.setCurrentFallingPiece(getUpcomingPiece());
+
+        // Create a thread that brings the current piece down at fixed rates.
+        isGameSessionRunning = true;
+        waitTimeBetweenAutomatedPieceDescending = 1000L;
+
+        pieceDescendingThread = new Thread(() -> {
+            while (isGameSessionRunning) {
+                try {
+                    Thread.sleep(waitTimeBetweenAutomatedPieceDescending);
+                } catch (InterruptedException e) {
+                    LOG.warn("An error occurred while trying to wait before moving the piece down again: {}", () -> e);
+                }
+
+                if (gameGrid.isPieceCollidingBottom()) {
+                    gameGrid.setCurrentFallingPiece(getUpcomingPiece());
+                } else {
+                    gameGrid.movePieceDownOneRow();
+                }
+            }
+        }, "PieceElevatorThread");
+        pieceDescendingThread.setDaemon(true);
+        pieceDescendingThread.start();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> isGameSessionRunning = false));
+    }
+
+    private Shape upcomingPiece;
+    private boolean isGameSessionRunning;
+    private Thread pieceDescendingThread;
+    private long waitTimeBetweenAutomatedPieceDescending;
+
+    private Shape getUpcomingPiece() {
+        Shape currentUpcomingPiece = upcomingPiece != null ? upcomingPiece : determineNewUpcomingPiece();
+        upcomingPiece = determineNewUpcomingPiece();
+
+        return currentUpcomingPiece;
+    }
+
+    private Shape determineNewUpcomingPiece() {
+        Shape chosenShape = Shapes.getRandomShape();
+
+        LOG.debug("Chosen new random upcoming shape: {}", () -> chosenShape);
+
+        return chosenShape;
     }
 }

@@ -46,6 +46,10 @@ public class TForm extends Shape {
 
     private final Map<Orientation, List<Position>> occupiedCellPositions = new HashMap<>(4);
 
+    public TForm() {
+        this(Orientation.UP);
+    }
+
     public TForm(Orientation initialOrientation) {
         super(initialOrientation);
 

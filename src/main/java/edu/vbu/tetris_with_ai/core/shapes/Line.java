@@ -52,6 +52,10 @@ public class Line extends Shape {
 
     private final Map<Orientation, List<Position>> occupiedCellPositions = new HashMap<>(4);
 
+    public Line() {
+        this(Orientation.UP);
+    }
+
     public Line(Orientation initialOrientation) {
         super(initialOrientation);
 
