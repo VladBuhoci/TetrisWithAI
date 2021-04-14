@@ -78,6 +78,6 @@ public class Line extends Shape {
 
     @Override
     public Color getColour() {
-        return Color.red;
+        return Color.cyan;
     }
 }
