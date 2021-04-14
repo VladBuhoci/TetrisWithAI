@@ -1,6 +1,10 @@
 package edu.vbu.tetris_with_ai.ui;
 
-import edu.vbu.tetris_with_ai.core.Square;
+import edu.vbu.tetris_with_ai.core.*;
+import edu.vbu.tetris_with_ai.core.shapes.Line;
+import edu.vbu.tetris_with_ai.core.shapes.Shape;
+import edu.vbu.tetris_with_ai.core.shapes.Zigzag;
+import edu.vbu.tetris_with_ai.core.shapes.ZigzagMirror;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -57,9 +61,9 @@ public class GameWindow extends JFrame {
                 // TODO: testing only
                 if (e.getKeyCode() == KeyEvent.VK_SPACE) {
                     LOG.warn("Spawning dev shape");
-                    Square devSquare = new Square();
+                    Shape devShape = new Line(Orientation.UP);
 
-                    gameGrid.setCurrentFallingPiece(devSquare);
+                    gameGrid.setCurrentFallingPiece(devShape);
                 }
 
                 if (e.getKeyCode() == KeyEvent.VK_DOWN) {
@@ -70,6 +74,13 @@ public class GameWindow extends JFrame {
                 }
                 if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
                     gameGrid.movePieceRightOneColumn();
+                }
+
+                if (e.getKeyCode() == KeyEvent.VK_Z) {
+                    gameGrid.rotatePieceLeftOnce();
+                }
+                if (e.getKeyCode() == KeyEvent.VK_UP) {
+                    gameGrid.rotatePieceRightOnce();
                 }
             }
 
