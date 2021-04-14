@@ -1,7 +1,7 @@
 package edu.vbu.tetris_with_ai.ui;
 
-import edu.vbu.tetris_with_ai.core.*;
-import edu.vbu.tetris_with_ai.core.shapes.*;
+import edu.vbu.tetris_with_ai.core.Orientation;
+import edu.vbu.tetris_with_ai.core.shapes.LFormMirror;
 import edu.vbu.tetris_with_ai.core.shapes.Shape;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -10,6 +10,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.net.URL;
 
 public class GameWindow extends JFrame {
 
@@ -39,6 +40,7 @@ public class GameWindow extends JFrame {
         setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         setResizable(false);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setIcon();
 
         JPanel mainPanel = createMainPanel();
         add(mainPanel);
@@ -46,7 +48,7 @@ public class GameWindow extends JFrame {
         addKeyListener(new KeyListener() {
             @Override
             public void keyTyped(KeyEvent e) {
-
+                // Not required.
             }
 
             @Override
@@ -84,9 +86,16 @@ public class GameWindow extends JFrame {
 
             @Override
             public void keyReleased(KeyEvent e) {
-
+                // Not required.
             }
         });
+    }
+
+    private void setIcon() {
+        URL tetrisIconResource = ClassLoader.getSystemResource("tetris.png");
+        Image tetrisIcon = Toolkit.getDefaultToolkit().createImage(tetrisIconResource);
+
+        setIconImage(tetrisIcon);
     }
 
     private JPanel createMainPanel() {
@@ -96,14 +105,13 @@ public class GameWindow extends JFrame {
         mainPanel.setBackground(mainPanelColour);
 
         gameGrid = new GameGrid(CELL_COUNT_HORIZONTALLY, CELL_COUNT_VERTICALLY, true);
-//        gameGrid.setBackground(Color.gray);
 
         JPanel gameStats = new JPanel(true);
         gameStats.setBackground(Color.black);//green);
         gameStats.setPreferredSize(new Dimension((int) (WINDOW_WIDTH * WEST_SPACE_WIDTH_PERCENTAGE), WINDOW_HEIGHT));
 
         JPanel gameFuture = new JPanel(true);
-        gameFuture.setBackground(Color.black);//red);
+        gameFuture.setBackground(Color.red);
         gameFuture.setPreferredSize(new Dimension((int) (WINDOW_WIDTH * EAST_SPACE_WIDTH_PERCENTAGE), WINDOW_HEIGHT));
 
         JPanel topSideFiller = new JPanel();

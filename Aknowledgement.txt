@@ -1,0 +1,1 @@
+* Icon based on the tetris.png file that was downloaded from https://www.flaticon.com/free-icon/tetris_566312 (thanks to https://www.freepik.com/).
