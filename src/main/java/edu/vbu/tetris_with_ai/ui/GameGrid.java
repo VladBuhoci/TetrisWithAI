@@ -2,14 +2,14 @@ package edu.vbu.tetris_with_ai.ui;
 
 import com.sun.istack.internal.Nullable;
 import edu.vbu.tetris_with_ai.core.Position;
+import edu.vbu.tetris_with_ai.core.shapes.Null;
 import edu.vbu.tetris_with_ai.core.shapes.Shape;
 import edu.vbu.tetris_with_ai.utils.VoidFunctionNoArg;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class GameGrid extends JPanel {
 
@@ -17,6 +17,8 @@ public class GameGrid extends JPanel {
     private static final Color EMPTY_CELL_COLOUR = Color.darkGray;
 
     private final JPanel[][] gridCells;
+    private final int rowCount;
+    private final int columnCount;
 
     private Shape currFallPiece;
     private int fallingPieceRowIndex, fallingPieceColumnIndex;
@@ -27,11 +29,13 @@ public class GameGrid extends JPanel {
         setBackground(BACKGROUND_COLOUR);
 
         this.gridCells = new JPanel[cellCountOnY][cellCountOnX];
+        this.rowCount = cellCountOnY;
+        this.columnCount = cellCountOnX;
 
         resetFallingPiece(null);
 
-        for (int i = 0; i < cellCountOnY; i++) {
-            for (int j = 0; j < cellCountOnX; j++) {
+        for (int i = 0; i < rowCount; i++) {
+            for (int j = 0; j < columnCount; j++) {
                 JPanel cell = new JPanel();
                 cell.setBackground(EMPTY_CELL_COLOUR);
 
@@ -95,6 +99,69 @@ public class GameGrid extends JPanel {
         return isPieceTouchingFloor() || isPieceTouchingOtherPieceDown();
     }
 
+    /**
+     * If the player has filled any number of horizontal lines, they will be cleared.
+     *
+     * @return the number of cleared rows.
+     */
+    public int tryClearCompletedHorizLines() {
+        int completedLines = 0;
+        Set<JPanel> potentialCellsToClear = new HashSet<>(columnCount);
+
+        // Clear the cells, if any rows are found to be completed.
+        for (int i = 0; i < rowCount; i++) {
+            potentialCellsToClear.clear();
+
+            for (int j = 0; j < columnCount; j++) {
+                JPanel cell = gridCells[i][j];
+
+                if (cell.getBackground() != EMPTY_CELL_COLOUR) {
+                    potentialCellsToClear.add(cell);
+                }
+            }
+
+            if (potentialCellsToClear.size() == columnCount) {
+                setCurrentFallingPiece(new Null());
+
+                // Found a complete line!
+
+                completedLines++;
+                potentialCellsToClear.forEach(cell -> cell.setBackground(BACKGROUND_COLOUR));
+            }
+        }
+
+        if (completedLines == 0) {
+            return 0;
+        }
+
+        // Fill the now-empty cells with the cells above.
+        int lookupDelta = 1;    // how many rows to look above to pull cell row down to current index (to avoid dragging down black rows).
+        boolean isAtLeastOneEmptyRowFilled = false;
+
+        for (int i = rowCount - 1; i > 0; i--) {
+            if (gridCells[i][0].getBackground() != BACKGROUND_COLOUR && !isAtLeastOneEmptyRowFilled) {
+                continue;
+            }
+
+            if (!isAtLeastOneEmptyRowFilled) {
+                int k = i - 1;
+                while (gridCells[k][0].getBackground() == BACKGROUND_COLOUR) {
+                    lookupDelta++;
+                    k--;
+                }
+            }
+
+            for (int j = 0; j < columnCount; j++) {
+                Color colourFromAbove = i - lookupDelta >= 0 ? gridCells[i - lookupDelta][j].getBackground() : EMPTY_CELL_COLOUR;
+
+                gridCells[i][j].setBackground(colourFromAbove);
+                isAtLeastOneEmptyRowFilled = true;
+            }
+        }
+
+        return completedLines;
+    }
+
     private void resetFallingPiece(@Nullable Shape newFallingPiece) {
         this.currFallPiece = newFallingPiece;
         this.fallingPieceRowIndex = 0;  // new piece starts at the top of the grid.
@@ -113,12 +180,19 @@ public class GameGrid extends JPanel {
         Map<JPanel, Color> previousCellColours = new HashMap<>(4);
 
         currFallPiece.getOccupiedCellPositions().forEach(pos -> {
-            JPanel cell = gridCells[fallingPieceRowIndex + pos.getPosX()][fallingPieceColumnIndex + pos.getPosY()];
+            int rowIndex = fallingPieceRowIndex + pos.getPosX();
+            int columnIndex = fallingPieceColumnIndex + pos.getPosY();
+            JPanel cell = gridCells[rowIndex][columnIndex];
+
+            if (cell.getBackground() == BACKGROUND_COLOUR) {
+                return;
+            }
+
             previousCellColours.put(cell, cell.getBackground());
 
             if (!forceRecolouring && cell.getBackground() != EMPTY_CELL_COLOUR && newColour != EMPTY_CELL_COLOUR) {
                 previousCellColours.keySet().forEach(prevCellState -> prevCellState.setBackground(previousCellColours.get(prevCellState)));
-                throw new IllegalStateException("Trying to recolour an already coloured cell");
+                throw new IllegalStateException("Tried to recolour an already coloured cell at position [" + rowIndex + ", " + columnIndex + "]");
             }
 
             cell.setBackground(newColour);
@@ -258,14 +332,6 @@ public class GameGrid extends JPanel {
 
         return CollisionLocation.NONE;
     }
-
-//    private boolean isPieceOverlappingWithOtherPiece() {
-//        assertCurrentPieceNotNull();
-//
-//        ERROR
-//
-//        return false;
-//    }
 
     ////////////////////////////////////////////////////////////////////////////////
     // Utils:

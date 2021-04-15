@@ -169,36 +169,38 @@ public class GameWindow extends JFrame {
         LOG.info("Starting game thread.");
 
         // Spawn initial piece.
-        gameGrid.setCurrentFallingPiece(getUpcomingPiece());
-        updateUpcomingPieceLabel();
+        spawnNewPiece();
 
         // Init session vars.
         isGameSessionRunning = true;
         waitTimeBetweenAutomatedPieceDescending = 1000L;
         score = 0;
 
+        // Initial delay.
+        waitForMillis(300L);
+
         // Create a thread that brings the current piece down at fixed rates.
         pieceDescendingThread = new Thread(() -> {
             while (isGameSessionRunning) {
-                try {
-                    Thread.sleep(waitTimeBetweenAutomatedPieceDescending);
-                } catch (InterruptedException e) {
-                    LOG.warn("An error occurred while trying to wait before moving the piece down again: {}", () -> e);
-                }
-
                 if (gameGrid.isPieceCollidingBottom()) {
+                    int clearedRows = gameGrid.tryClearCompletedHorizLines();
+                    if (clearedRows > 0) {
+                        // If there were any completed (and cleared by now) horizontal lines, raise the score accordingly.
+                        increaseScore(clearedRows);
+                    }
+
                     try {
-                        gameGrid.setCurrentFallingPiece(getUpcomingPiece());
-                        updateUpcomingPieceLabel();
+                        spawnNewPiece();
                     } catch (IllegalStateException e) {
                         // Failure to apply the new piece's colours in one or more cells means the place is already (partially) occupied by other piece(s).
                         // Consider it to be game over.
-
                         endGame();
                     }
                 } else {
                     gameGrid.movePieceDownOneRow();
                 }
+
+                waitForMillis(waitTimeBetweenAutomatedPieceDescending);
             }
         }, "PieceElevatorThread");
         pieceDescendingThread.setDaemon(true);
@@ -220,6 +222,11 @@ public class GameWindow extends JFrame {
     private long waitTimeBetweenAutomatedPieceDescending;
     private int score;
 
+    private void spawnNewPiece() {
+        gameGrid.setCurrentFallingPiece(getUpcomingPiece());
+        updateUpcomingPieceLabel();
+    }
+
     private Shape getUpcomingPiece() {
         Shape currentUpcomingPiece = upcomingPiece != null ? upcomingPiece : determineNewUpcomingPiece();
         upcomingPiece = determineNewUpcomingPiece();
@@ -235,7 +242,25 @@ public class GameWindow extends JFrame {
         return chosenShape;
     }
 
+    private void increaseScore(int clearedLines) {
+        score += clearedLines;
+        updateScoreLabel();
+    }
+
+    // TODO: use the formula
+    private void updateScoreLabel() {
+        ((ScoreComponent) gameStats.getComponent(0)).setScore(score);
+    }
+
     private void updateUpcomingPieceLabel() {
         ((UpcomingPieceComponent) gameFuture.getComponent(0)).setUpcomingPieceName(upcomingPiece.getName());
+    }
+
+    private void waitForMillis(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            LOG.warn("An error occurred while trying to wait before moving the piece down again: {}", () -> e);
+        }
     }
 }

@@ -15,7 +15,7 @@ public class StatusComponent extends JPanel {
         status.setForeground(Color.white);
         status.setFont(new Font(status.getFont().getName(), Font.PLAIN, 40));
 
-        setStatusGameOver(true);
+        setStatusGameOver(false);
 
         add(status);
     }
