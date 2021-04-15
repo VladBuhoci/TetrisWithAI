@@ -11,12 +11,18 @@ public class ScoreComponent extends JPanel {
         setBackground(backgroundColour);
         setLayout(new GridBagLayout());
 
-        scoreValue = new JLabel();
-        scoreValue.setForeground(Color.white);
-        setScore(0);
-
         JLabel scoreLabel = new JLabel("Score: ");
         scoreLabel.setForeground(Color.white);
+
+        scoreValue = new JLabel();
+        scoreValue.setForeground(Color.white);
+
+        Font font = new Font(scoreLabel.getFont().getName(), Font.PLAIN, 20);
+
+        scoreLabel.setFont(font);
+        scoreValue.setFont(font);
+
+        setScore(0);
 
         add(scoreLabel);
         add(scoreValue);

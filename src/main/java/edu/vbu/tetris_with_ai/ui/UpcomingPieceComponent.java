@@ -11,12 +11,18 @@ public class UpcomingPieceComponent extends JPanel {
         setBackground(backgroundColour);
         setLayout(new GridBagLayout());
 
+        JLabel nextPieceLabel = new JLabel("Next: ");
+        nextPieceLabel.setForeground(Color.white);
+
         upcomingPieceName = new JLabel();
         upcomingPieceName.setForeground(Color.white);
-        setUpcomingPieceName(null);
 
-        JLabel nextPieceLabel = new JLabel("Next piece: ");
-        nextPieceLabel.setForeground(Color.white);
+        Font font = new Font(nextPieceLabel.getFont().getName(), Font.PLAIN, 18);
+
+        nextPieceLabel.setFont(font);
+        upcomingPieceName.setFont(font);
+
+        setUpcomingPieceName(null);
 
         add(nextPieceLabel);
         add(upcomingPieceName);

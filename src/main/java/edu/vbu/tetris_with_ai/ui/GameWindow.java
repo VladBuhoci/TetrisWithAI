@@ -34,6 +34,7 @@ public class GameWindow extends JFrame {
     private GameGrid gameGrid;
     private JPanel gameFuture;
     private JPanel gameStats;
+    private JPanel topSideFiller;
 
     public GameWindow() {
         super("Tetris with AI");
@@ -107,10 +108,7 @@ public class GameWindow extends JFrame {
         gameGrid = new GameGrid(CELL_COUNT_HORIZONTALLY, CELL_COUNT_VERTICALLY, true);
         gameStats = createStatsPanel(mainPanelColour);
         gameFuture = createFuturePiecePanel(mainPanelColour);
-
-        JPanel topSideFiller = new JPanel();
-        topSideFiller.setBackground(mainPanelColour);
-        topSideFiller.setPreferredSize(new Dimension(WINDOW_WIDTH, (int) (WINDOW_HEIGHT * TOP_FILLER_SPACE_HEIGHT_PERCENTAGE)));
+        topSideFiller = createTopSideFillerPanel(mainPanelColour);
 
         JPanel bottomSideFiller = new JPanel();
         bottomSideFiller.setBackground(mainPanelColour);
@@ -147,6 +145,16 @@ public class GameWindow extends JFrame {
         return futurePiecePanel;
     }
 
+    private JPanel createTopSideFillerPanel(Color backgroundColour) {
+        JPanel topFillerPanel = new JPanel();
+        topFillerPanel.setBackground(backgroundColour);
+        topFillerPanel.setPreferredSize(new Dimension(WINDOW_WIDTH, (int) (WINDOW_HEIGHT * TOP_FILLER_SPACE_HEIGHT_PERCENTAGE)));
+        topFillerPanel.setLayout(new BoxLayout(topFillerPanel, BoxLayout.Y_AXIS));
+
+        topFillerPanel.add(new StatusComponent(backgroundColour));
+
+        return topFillerPanel;
+    }
 
     public void start() {
         setVisible(true);
@@ -203,6 +211,7 @@ public class GameWindow extends JFrame {
         LOG.info("Stopping game thread.");
 
         isGameSessionRunning = false;
+        ((StatusComponent) topSideFiller.getComponent(0)).setStatusGameOver(true);
     }
 
     private Shape upcomingPiece;
