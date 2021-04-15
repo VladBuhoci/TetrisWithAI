@@ -51,7 +51,7 @@ public class LForm extends Shape {
     }
 
     public LForm(Orientation initialOrientation) {
-        super(initialOrientation);
+        super("L Form", initialOrientation);
 
         occupiedCellPositions.put(Orientation.UP, occupiedCellPositionsUpOrient);
         occupiedCellPositions.put(Orientation.RIGHT, occupiedCellPositionsRightOrient);

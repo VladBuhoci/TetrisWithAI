@@ -5,7 +5,24 @@ import java.awt.*;
 
 public class UpcomingPieceComponent extends JPanel {
 
-    public UpcomingPieceComponent(Color color) {
-        setBackground(color);
+    private final JLabel upcomingPieceName;
+
+    public UpcomingPieceComponent(Color backgroundColour) {
+        setBackground(backgroundColour);
+        setLayout(new GridBagLayout());
+
+        upcomingPieceName = new JLabel();
+        upcomingPieceName.setForeground(Color.white);
+        setUpcomingPieceName(null);
+
+        JLabel nextPieceLabel = new JLabel("Next piece: ");
+        nextPieceLabel.setForeground(Color.white);
+
+        add(nextPieceLabel);
+        add(upcomingPieceName);
+    }
+
+    public void setUpcomingPieceName(String pieceName) {
+        upcomingPieceName.setText(pieceName);
     }
 }

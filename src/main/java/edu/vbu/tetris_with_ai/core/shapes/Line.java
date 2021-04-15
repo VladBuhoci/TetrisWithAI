@@ -57,7 +57,7 @@ public class Line extends Shape {
     }
 
     public Line(Orientation initialOrientation) {
-        super(initialOrientation);
+        super("Line", initialOrientation);
 
         occupiedCellPositions.put(Orientation.UP, occupiedCellPositionsUpOrient);
         occupiedCellPositions.put(Orientation.RIGHT, occupiedCellPositionsRightOrient);

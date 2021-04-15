@@ -25,7 +25,7 @@ public class Square extends Shape {
     );
 
     public Square() {
-        super(Orientation.UP);
+        super("Square", Orientation.UP);
     }
 
     @Override

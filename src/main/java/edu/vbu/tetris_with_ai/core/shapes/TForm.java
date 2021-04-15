@@ -51,7 +51,7 @@ public class TForm extends Shape {
     }
 
     public TForm(Orientation initialOrientation) {
-        super(initialOrientation);
+        super("T Form", initialOrientation);
 
         occupiedCellPositions.put(Orientation.UP, occupiedCellPositionsUpOrient);
         occupiedCellPositions.put(Orientation.RIGHT, occupiedCellPositionsRightOrient);

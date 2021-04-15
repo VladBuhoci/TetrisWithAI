@@ -51,7 +51,7 @@ public class ZigzagMirror extends Shape {
     }
 
     public ZigzagMirror(Orientation initialOrientation) {
-        super(initialOrientation);
+        super("Zigzag (R)", initialOrientation);
 
         occupiedCellPositions.put(Orientation.UP, occupiedCellPositionsUpOrient);
         occupiedCellPositions.put(Orientation.RIGHT, occupiedCellPositionsRightOrient);

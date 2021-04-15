@@ -41,7 +41,13 @@ public class GameGrid extends JPanel {
         }
     }
 
-    public void setCurrentFallingPiece(Shape fallingPiece) {
+    /**
+     * Spawns the given piece at the top of the grid.
+     *
+     * @param fallingPiece the new piece to insert into the game grid.
+     * @throws IllegalStateException when the place is occupied by other piece(s).
+     */
+    public void setCurrentFallingPiece(Shape fallingPiece) throws IllegalStateException {
         if (currFallPiece != fallingPiece) {
             if (currFallPiece != null) {
                 // Darken the now-abandoned piece (to easily distinguish between static pieces and the falling one + collision detection is partially based on colours!!).

@@ -32,6 +32,8 @@ public class GameWindow extends JFrame {
     private static final double EAST_SPACE_WIDTH_PERCENTAGE = 0.225;
 
     private GameGrid gameGrid;
+    private JPanel gameFuture;
+    private JPanel gameStats;
 
     public GameWindow() {
         super("Tetris with AI");
@@ -84,6 +86,9 @@ public class GameWindow extends JFrame {
                 // Not required.
             }
         });
+
+        // Position to center of screen.
+        setLocationRelativeTo(null);
     }
 
     private void setIcon() {
@@ -100,12 +105,8 @@ public class GameWindow extends JFrame {
         mainPanel.setBackground(mainPanelColour);
 
         gameGrid = new GameGrid(CELL_COUNT_HORIZONTALLY, CELL_COUNT_VERTICALLY, true);
-
-        JPanel gameStats = new JPanel(true);
-        gameStats.setBackground(Color.black);//green);
-        gameStats.setPreferredSize(new Dimension((int) (WINDOW_WIDTH * WEST_SPACE_WIDTH_PERCENTAGE), WINDOW_HEIGHT));
-
-        JPanel gameFuture = createFuturePiecePanel();
+        gameStats = createStatsPanel(mainPanelColour);
+        gameFuture = createFuturePiecePanel(mainPanelColour);
 
         JPanel topSideFiller = new JPanel();
         topSideFiller.setBackground(mainPanelColour);
@@ -124,37 +125,51 @@ public class GameWindow extends JFrame {
         return mainPanel;
     }
 
-    private JPanel createFuturePiecePanel() {
-        JPanel gameFuture = new JPanel(true);
-        gameFuture.setBackground(Color.red);
-        gameFuture.setPreferredSize(new Dimension((int) (WINDOW_WIDTH * EAST_SPACE_WIDTH_PERCENTAGE), WINDOW_HEIGHT));
-        gameFuture.setLayout(new BoxLayout(gameFuture, BoxLayout.Y_AXIS));
+    private JPanel createStatsPanel(Color backgroundColour) {
+        JPanel statsPanel = new JPanel(true);
+        statsPanel.setBackground(backgroundColour);
+        statsPanel.setPreferredSize(new Dimension((int) (WINDOW_WIDTH * WEST_SPACE_WIDTH_PERCENTAGE), WINDOW_HEIGHT));
+        statsPanel.setLayout(new BoxLayout(statsPanel, BoxLayout.Y_AXIS));
 
-        gameFuture.add(new UpcomingPieceComponent(Color.red));
-        gameFuture.add(new UpcomingPieceComponent(Color.yellow));
-        gameFuture.add(new UpcomingPieceComponent(Color.pink));
+        statsPanel.add(new ScoreComponent(backgroundColour));
 
-        return gameFuture;
+        return statsPanel;
+    }
+
+    private JPanel createFuturePiecePanel(Color backgroundColour) {
+        JPanel futurePiecePanel = new JPanel(true);
+        futurePiecePanel.setBackground(backgroundColour);
+        futurePiecePanel.setPreferredSize(new Dimension((int) (WINDOW_WIDTH * EAST_SPACE_WIDTH_PERCENTAGE), WINDOW_HEIGHT));
+        futurePiecePanel.setLayout(new BoxLayout(futurePiecePanel, BoxLayout.Y_AXIS));
+
+        futurePiecePanel.add(new UpcomingPieceComponent(backgroundColour));
+
+        return futurePiecePanel;
     }
 
 
     public void start() {
         setVisible(true);
-        startGameThread();
+        startGame();
     }
 
     ////////////////////////////////////////////////////////////////////////////////
     // Game flow
     ////////////////////////////////////////////////////////////////////////////////
 
-    private void startGameThread() {
-        // Initial piece.
-        gameGrid.setCurrentFallingPiece(getUpcomingPiece());
+    private void startGame() {
+        LOG.info("Starting game thread.");
 
-        // Create a thread that brings the current piece down at fixed rates.
+        // Spawn initial piece.
+        gameGrid.setCurrentFallingPiece(getUpcomingPiece());
+        updateUpcomingPieceLabel();
+
+        // Init session vars.
         isGameSessionRunning = true;
         waitTimeBetweenAutomatedPieceDescending = 1000L;
+        score = 0;
 
+        // Create a thread that brings the current piece down at fixed rates.
         pieceDescendingThread = new Thread(() -> {
             while (isGameSessionRunning) {
                 try {
@@ -164,7 +179,15 @@ public class GameWindow extends JFrame {
                 }
 
                 if (gameGrid.isPieceCollidingBottom()) {
-                    gameGrid.setCurrentFallingPiece(getUpcomingPiece());
+                    try {
+                        gameGrid.setCurrentFallingPiece(getUpcomingPiece());
+                        updateUpcomingPieceLabel();
+                    } catch (IllegalStateException e) {
+                        // Failure to apply the new piece's colours in one or more cells means the place is already (partially) occupied by other piece(s).
+                        // Consider it to be game over.
+
+                        endGame();
+                    }
                 } else {
                     gameGrid.movePieceDownOneRow();
                 }
@@ -176,10 +199,17 @@ public class GameWindow extends JFrame {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> isGameSessionRunning = false));
     }
 
+    private void endGame() {
+        LOG.info("Stopping game thread.");
+
+        isGameSessionRunning = false;
+    }
+
     private Shape upcomingPiece;
     private boolean isGameSessionRunning;
     private Thread pieceDescendingThread;
     private long waitTimeBetweenAutomatedPieceDescending;
+    private int score;
 
     private Shape getUpcomingPiece() {
         Shape currentUpcomingPiece = upcomingPiece != null ? upcomingPiece : determineNewUpcomingPiece();
@@ -194,5 +224,9 @@ public class GameWindow extends JFrame {
         LOG.debug("Chosen new random upcoming shape: {}", () -> chosenShape);
 
         return chosenShape;
+    }
+
+    private void updateUpcomingPieceLabel() {
+        ((UpcomingPieceComponent) gameFuture.getComponent(0)).setUpcomingPieceName(upcomingPiece.getName());
     }
 }

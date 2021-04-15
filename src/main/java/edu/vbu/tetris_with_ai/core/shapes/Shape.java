@@ -8,10 +8,16 @@ import java.util.List;
 
 public abstract class Shape {
 
+    protected String name;
     protected Orientation currentOrientation;
 
-    protected Shape(Orientation initialOrientation) {
+    protected Shape(String name, Orientation initialOrientation) {
+        this.name = name;
         this.currentOrientation = initialOrientation;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public abstract void rotateLeft();

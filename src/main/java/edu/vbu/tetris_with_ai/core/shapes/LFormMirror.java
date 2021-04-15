@@ -51,7 +51,7 @@ public class LFormMirror extends Shape {
     }
 
     public LFormMirror(Orientation initialOrientation) {
-        super(initialOrientation);
+        super("L Form (R)", initialOrientation);
 
         occupiedCellPositions.put(Orientation.UP, occupiedCellPositionsUpOrient);
         occupiedCellPositions.put(Orientation.RIGHT, occupiedCellPositionsRightOrient);

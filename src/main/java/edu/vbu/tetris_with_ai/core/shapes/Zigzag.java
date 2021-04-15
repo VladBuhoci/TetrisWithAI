@@ -51,7 +51,7 @@ public class Zigzag extends Shape {
     }
 
     public Zigzag(Orientation initialOrientation) {
-        super(initialOrientation);
+        super("Zigzag", initialOrientation);
 
         occupiedCellPositions.put(Orientation.UP, occupiedCellPositionsUpOrient);
         occupiedCellPositions.put(Orientation.RIGHT, occupiedCellPositionsRightOrient);
