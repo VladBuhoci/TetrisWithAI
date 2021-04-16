@@ -175,6 +175,7 @@ public class GameWindow extends JFrame {
         isGameSessionRunning = true;
         waitTimeBetweenAutomatedPieceDescending = 1000L;
         score = 0;
+        level = 0;
 
         // Initial delay.
         waitForMillis(300L);
@@ -221,6 +222,7 @@ public class GameWindow extends JFrame {
     private Thread pieceDescendingThread;
     private long waitTimeBetweenAutomatedPieceDescending;
     private int score;
+    private int level;
 
     private void spawnNewPiece() {
         gameGrid.setCurrentFallingPiece(getUpcomingPiece());
@@ -243,13 +245,29 @@ public class GameWindow extends JFrame {
     }
 
     private void increaseScore(int clearedLines) {
-        score += clearedLines;
+        int deltaScore = 0;
+
+        switch (clearedLines) {
+            case 1:
+                deltaScore = 40 * (level + 1);
+                break;
+            case 2:
+                deltaScore = 100 * (level + 1);
+                break;
+            case 3:
+                deltaScore = 300 * (level + 1);
+                break;
+            case 4:
+                deltaScore = 1200 * (level + 1);
+                break;
+        }
+
+        score += deltaScore;
         updateScoreLabel();
     }
 
-    // TODO: use the formula
     private void updateScoreLabel() {
-        ((ScoreComponent) gameStats.getComponent(0)).setScore(score);
+        ((ScoreComponent) gameStats.getComponent(0)).setLevelAndScore(level, score);
     }
 
     private void updateUpcomingPieceLabel() {
