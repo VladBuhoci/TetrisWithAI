@@ -173,9 +173,10 @@ public class GameWindow extends JFrame {
 
         // Init session vars.
         isGameSessionRunning = true;
-        waitTimeBetweenAutomatedPieceDescending = 1000L;
+        pieceMoveDownTimesPerSecond = 1.0;
         score = 0;
         level = 0;
+        clearedLinesCount = 0;
 
         // Initial delay.
         waitForMillis(300L);
@@ -201,7 +202,7 @@ public class GameWindow extends JFrame {
                     gameGrid.movePieceDownOneRow();
                 }
 
-                waitForMillis(waitTimeBetweenAutomatedPieceDescending);
+                waitForMillis(getWaitTimeForCurrentLevel());
             }
         }, "PieceElevatorThread");
         pieceDescendingThread.setDaemon(true);
@@ -220,9 +221,12 @@ public class GameWindow extends JFrame {
     private Shape upcomingPiece;
     private boolean isGameSessionRunning;
     private Thread pieceDescendingThread;
-    private long waitTimeBetweenAutomatedPieceDescending;
+    private double pieceMoveDownTimesPerSecond;
     private int score;
     private int level;
+    private int clearedLinesCount;
+
+    private static final int LINES_REQUIRED_FOR_LEVEL_UP = 10;
 
     private void spawnNewPiece() {
         gameGrid.setCurrentFallingPiece(getUpcomingPiece());
@@ -246,6 +250,9 @@ public class GameWindow extends JFrame {
 
     private void increaseScore(int clearedLines) {
         int deltaScore = 0;
+
+        clearedLinesCount += clearedLines;
+        level = clearedLinesCount / LINES_REQUIRED_FOR_LEVEL_UP;
 
         switch (clearedLines) {
             case 1:
@@ -280,5 +287,9 @@ public class GameWindow extends JFrame {
         } catch (InterruptedException e) {
             LOG.warn("An error occurred while trying to wait before moving the piece down again: {}", () -> e);
         }
+    }
+
+    private long getWaitTimeForCurrentLevel() {
+        return (long) (1.0 / pieceMoveDownTimesPerSecond * 1000.0);
     }
 }
