@@ -11,10 +11,16 @@ import java.awt.*;
 import java.util.List;
 import java.util.*;
 
-public class GameGrid extends JPanel {
+import static edu.vbu.tetris_with_ai.utils.Constants.BACKGROUND_COLOUR;
+import static edu.vbu.tetris_with_ai.utils.Constants.EMPTY_CELL_COLOUR;
 
-    private static final Color BACKGROUND_COLOUR = Color.black;
-    private static final Color EMPTY_CELL_COLOUR = Color.darkGray;
+/**
+ * <pre>
+ * Contains tetris grid content.
+ * Handles piece translation, rotation and collision detection.
+ * </pre>
+ */
+public class GameGrid extends JPanel {
 
     private final JPanel[][] gridCells;
     private final int rowCount;
