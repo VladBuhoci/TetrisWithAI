@@ -40,6 +40,10 @@ public class GameWindow extends JFrame {
         setLocationRelativeTo(null);
     }
 
+    public void displayWindow() {
+        setVisible(true);
+    }
+
     private void setIcon() {
         URL tetrisIconResource = ClassLoader.getSystemResource(Constants.WINDOW_ICON_PATH);
         Image tetrisIcon = Toolkit.getDefaultToolkit().createImage(tetrisIconResource);
@@ -81,6 +85,8 @@ public class GameWindow extends JFrame {
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
                     LOG.debug("Closing game window via Escape key press event.");
+
+                    tetrisGame.endGame();
                     dispose();
                 }
 
@@ -152,14 +158,6 @@ public class GameWindow extends JFrame {
         return topFillerPanel;
     }
 
-    public void displayWindow() {
-        setVisible(true);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // Game flow
-    ////////////////////////////////////////////////////////////////////////////////
-
     private void updateLevelAndScoreLabel(int level, int score) {
         ((ScoreComponent) gameStats.getComponent(0)).setLevelAndScore(level, score);
     }
@@ -167,132 +165,4 @@ public class GameWindow extends JFrame {
     private void updateUpcomingPieceLabel(String upcomingPieceName) {
         ((UpcomingPieceComponent) gameFuture.getComponent(0)).setUpcomingPieceName(upcomingPieceName);
     }
-
-//    private void startGame() {
-//        LOG.info("Starting game thread.");
-//
-//        // Spawn initial piece.
-//        spawnNewPiece();
-//
-//        // Init session vars.
-//        isGameSessionRunning = true;
-//        pieceMoveDownTimesPerSecond = 1.0;
-//        score = 0;
-//        level = 0;
-//        clearedLinesCount = 0;
-//
-//        // Initial delay.
-//        waitForMillis(300L);
-//
-//        // Create a thread that brings the current piece down at fixed rates.
-//        pieceDescendingThread = new Thread(() -> {
-//            while (isGameSessionRunning) {
-//                if (gameGrid.isPieceCollidingBottom()) {
-//                    int clearedRows = gameGrid.tryClearCompletedHorizLines();
-//                    if (clearedRows > 0) {
-//                        // If there were any completed (and cleared by now) horizontal lines, raise the score accordingly.
-//                        increaseScore(clearedRows);
-//                    }
-//
-//                    try {
-//                        spawnNewPiece();
-//                    } catch (IllegalStateException e) {
-//                        // Failure to apply the new piece's colours in one or more cells means the place is already (partially) occupied by other piece(s).
-//                        // Consider it to be game over.
-//                        endGame();
-//                    }
-//                } else {
-//                    gameGrid.movePieceDownOneRow();
-//                }
-//
-//                waitForMillis(getWaitTimeForCurrentLevel());
-//            }
-//        }, "PieceElevatorThread");
-//        pieceDescendingThread.setDaemon(true);
-//        pieceDescendingThread.start();
-//
-//        Runtime.getRuntime().addShutdownHook(new Thread(() -> isGameSessionRunning = false));
-//    }
-//
-//    private void endGame() {
-//        LOG.info("Stopping game thread.");
-//
-//        isGameSessionRunning = false;
-//        ((StatusComponent) topSideFiller.getComponent(0)).setStatusGameOver(true);
-//    }
-//
-//    private Shape upcomingPiece;
-//    private boolean isGameSessionRunning;
-//    private Thread pieceDescendingThread;
-//    private double pieceMoveDownTimesPerSecond;
-//    private int score;
-//    private int level;
-//    private int clearedLinesCount;
-//
-//    private static final int LINES_REQUIRED_FOR_LEVEL_UP = 10;
-//
-//    private void spawnNewPiece() {
-//        gameGrid.setCurrentFallingPiece(getUpcomingPiece());
-//        updateUpcomingPieceLabel();
-//    }
-//
-//    private Shape getUpcomingPiece() {
-//        Shape currentUpcomingPiece = upcomingPiece != null ? upcomingPiece : determineNewUpcomingPiece();
-//        upcomingPiece = determineNewUpcomingPiece();
-//
-//        return currentUpcomingPiece;
-//    }
-//
-//    private Shape determineNewUpcomingPiece() {
-//        Shape chosenShape = Shapes.getRandomShape();
-//
-//        LOG.debug("Chosen new random upcoming shape: {}", () -> chosenShape);
-//
-//        return chosenShape;
-//    }
-//
-//    private void increaseScore(int clearedLines) {
-//        int deltaScore = 0;
-//
-//        clearedLinesCount += clearedLines;
-//        level = clearedLinesCount / LINES_REQUIRED_FOR_LEVEL_UP;
-//
-//        switch (clearedLines) {
-//            case 1:
-//                deltaScore = 40 * (level + 1);
-//                break;
-//            case 2:
-//                deltaScore = 100 * (level + 1);
-//                break;
-//            case 3:
-//                deltaScore = 300 * (level + 1);
-//                break;
-//            case 4:
-//                deltaScore = 1200 * (level + 1);
-//                break;
-//        }
-//
-//        score += deltaScore;
-//        updateScoreLabel();
-//    }
-//
-//    private void updateScoreLabel() {
-//        ((ScoreComponent) gameStats.getComponent(0)).setLevelAndScore(level, score);
-//    }
-//
-//    private void updateUpcomingPieceLabel() {
-//        ((UpcomingPieceComponent) gameFuture.getComponent(0)).setUpcomingPieceName(upcomingPiece.getName());
-//    }
-//
-//    private void waitForMillis(long millis) {
-//        try {
-//            Thread.sleep(millis);
-//        } catch (InterruptedException e) {
-//            LOG.warn("An error occurred while trying to wait before moving the piece down again: {}", () -> e);
-//        }
-//    }
-//
-//    private long getWaitTimeForCurrentLevel() {
-//        return (long) (1.0 / pieceMoveDownTimesPerSecond * 1000.0);
-//    }
 }

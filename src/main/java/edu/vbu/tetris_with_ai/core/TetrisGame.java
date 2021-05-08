@@ -81,18 +81,22 @@ public final class TetrisGame {
                 waitForMillis(getWaitTimeForCurrentLevel());
             }
         }, "PieceElevatorThread-" + Thread.currentThread().getId());
-        pieceDescendingThread.setDaemon(true);
-        pieceDescendingThread.start();
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> isGameSessionRunning = false));
+        pieceDescendingThread.start();
     }
 
     public void endGame() {
-        LOG.info("Stopping game thread.");
+        if (isGameSessionRunning) {
+            LOG.info("Stopping game thread.");
 
-        isGameSessionRunning = false;
+            isGameSessionRunning = false;
 
-        Optional.of(onGameOverCallback).ifPresent(VoidFunctionNoArg::call);
+            if (pieceDescendingThread != null && pieceDescendingThread.isAlive()) {
+                pieceDescendingThread.interrupt();
+            }
+
+            Optional.ofNullable(onGameOverCallback).ifPresent(VoidFunctionNoArg::call);
+        }
     }
 
     public void setOnGameOverCallback(VoidFunctionNoArg onGameOverCallback) {
@@ -138,7 +142,7 @@ public final class TetrisGame {
     private void spawnNewPiece() {
         gameGrid.setCurrentFallingPiece(getUpcomingPiece());
 
-        Optional.of(onSpawnPieceCallback).ifPresent(callback -> callback.call(upcomingPiece.getName()));
+        Optional.ofNullable(onSpawnPieceCallback).ifPresent(callback -> callback.call(upcomingPiece.getName()));
     }
 
     private Shape getUpcomingPiece() {
@@ -179,14 +183,18 @@ public final class TetrisGame {
 
         score += deltaScore;
 
-        Optional.of(onScoreIncreasedCallback).ifPresent(callback -> callback.call(level, score));
+        Optional.ofNullable(onScoreIncreasedCallback).ifPresent(callback -> callback.call(level, score));
     }
 
     private void waitForMillis(long millis) {
         try {
             Thread.sleep(millis);
         } catch (InterruptedException e) {
-            LOG.warn("An error occurred while trying to wait before moving the piece down again: {}", () -> e);
+            if (e.getMessage().equalsIgnoreCase("sleep interrupted")) {
+                // Do nothing, thread was interrupted on purpose (game stopped by user).
+            } else {
+                LOG.warn("An error occurred while trying to wait before moving the piece down again: {}", () -> e);
+            }
         }
     }
 
