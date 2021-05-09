@@ -14,7 +14,7 @@ public class TetrisForHumanPlayer {
         LOG.info("Starting a standalone Tetris game with UI for a human player...");
 
         TetrisGame tetrisGame = new TetrisGame();
-        GameWindow gameWindow = new GameWindow("Tetris", tetrisGame);
+        GameWindow gameWindow = new GameWindow("Tetris", tetrisGame, true);
 
         gameWindow.displayWindow();
         tetrisGame.startGame(Constants.GAME_START_INITIAL_DELAY);

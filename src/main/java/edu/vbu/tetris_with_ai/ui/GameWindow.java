@@ -21,7 +21,7 @@ public class GameWindow extends JFrame {
     private JPanel gameStats;
     private JPanel topSideFiller;
 
-    public GameWindow(String windowTitle, TetrisGame tetrisGame) {
+    public GameWindow(String windowTitle, TetrisGame tetrisGame, boolean bMapUserInput) {
         super(windowTitle);
 
         this.tetrisGame = tetrisGame;
@@ -31,7 +31,9 @@ public class GameWindow extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         setIcon();
-        setUpUserInputMappings();
+        if (bMapUserInput) {
+            setUpUserInputMappings();
+        }
         setUpCallbacks();
 
         add(createMainPanel());
