@@ -1,6 +1,6 @@
 package edu.vbu.tetris_with_ai.core;
 
-public class Position {
+public final class Position {
 
     private final int posX;
     private final int posY;

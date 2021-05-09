@@ -33,8 +33,8 @@ public abstract class Constants {
     public static final Color BACKGROUND_COLOUR = Color.black;
     public static final Color EMPTY_CELL_COLOUR = Color.darkGray;
 
-    public static final int  WINDOW_WIDTH = 300 + CELL_COUNT_HORIZONTALLY * CELL_SIZE * 10;
-    public static final int WINDOW_HEIGHT = 200 +   CELL_COUNT_VERTICALLY * CELL_SIZE * 10;
+    public static final int WINDOW_WIDTH = 300 + CELL_COUNT_HORIZONTALLY * CELL_SIZE * 10;
+    public static final int WINDOW_HEIGHT = 200 + CELL_COUNT_VERTICALLY * CELL_SIZE * 10;
 
     // How much of the total window height should be allocated for each empty area (up and bottom).
     public static final double TOP_FILLER_SPACE_HEIGHT_PERCENTAGE = 0.1;
@@ -43,4 +43,10 @@ public abstract class Constants {
     // How much of the total window width should be allocated for each side area (west/stats panel and east/future pieces panel).
     public static final double WEST_SPACE_WIDTH_PERCENTAGE = 0.225;
     public static final double EAST_SPACE_WIDTH_PERCENTAGE = 0.225;
+
+    //======================================================================
+    //      AI settings:
+    //======================================================================
+
+    public static final long AI_WAIT_TIME_MILLIS_BEFORE_NEXT_MOVE = 100L;
 }

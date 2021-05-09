@@ -99,6 +99,10 @@ public final class TetrisGame {
         }
     }
 
+    public boolean isGameOver() {
+        return !isGameSessionRunning;
+    }
+
     public void setOnGameOverCallback(VoidFunctionNoArg onGameOverCallback) {
         this.onGameOverCallback = onGameOverCallback;
     }
@@ -113,6 +117,22 @@ public final class TetrisGame {
 
     public GameGrid getGameGrid() {
         return gameGrid;
+    }
+
+    public void performAction(Action action) {
+        LOG.debug("Performing the following action upon current Tetris game: {}", () -> action);
+
+        switch (action) {
+            case MOVE_DOWN_ONCE:    movePieceDownOneRow();      break;
+            case MOVE_LEFT_ONCE:    movePieceLeftOneColumn();   break;
+            case MOVE_RIGHT_ONCE:   movePieceRightOneColumn();  break;
+            case ROTATE_LEFT_ONCE:  rotatePieceLeftOnce();      break;
+            case ROTATE_RIGHT_ONCE: rotatePieceRightOnce();     break;
+//            case DROP: /* TODO: dropping is not implemented yet. */ break;
+
+            default:
+                break;
+        }
     }
 
     // Begin delegates.
