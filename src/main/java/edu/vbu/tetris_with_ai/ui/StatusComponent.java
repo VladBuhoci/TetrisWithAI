@@ -13,7 +13,7 @@ public class StatusComponent extends JPanel {
 
         status = new JLabel();
         status.setForeground(Color.white);
-        status.setFont(new Font(status.getFont().getName(), Font.PLAIN, 40));
+        status.setFont(new Font(status.getFont().getName(), Font.PLAIN, 30));
 
         setStatusGameOver(false);
 

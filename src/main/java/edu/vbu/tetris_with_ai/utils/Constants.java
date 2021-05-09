@@ -12,8 +12,8 @@ public abstract class Constants {
     //      Core game settings:
     //======================================================================
 
-    public static final int CELL_COUNT_HORIZONTALLY = 10;
-    public static final int CELL_COUNT_VERTICALLY = 20;
+    public static final int CELL_COUNT_HORIZONTALLY = 6;
+    public static final int CELL_COUNT_VERTICALLY = 12;
 
     public static final int LINES_REQUIRED_FOR_LEVEL_UP = 10;
 
@@ -27,7 +27,7 @@ public abstract class Constants {
 
     public static final boolean IS_DOUBLE_BUFFERED = true;
 
-    public static final int CELL_SIZE = 4;     // horizontally, as well as vertically, measured in pixels.
+    public static final int CELL_SIZE = 2;     // horizontally, as well as vertically, measured in pixels.
 
     // Always keep the background and empty cells' colour values different!
     public static final Color BACKGROUND_COLOUR = Color.black;

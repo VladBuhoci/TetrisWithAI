@@ -17,7 +17,7 @@ public class UpcomingPieceComponent extends JPanel {
         upcomingPieceName = new JLabel();
         upcomingPieceName.setForeground(Color.white);
 
-        Font font = new Font(nextPieceLabel.getFont().getName(), Font.PLAIN, 18);
+        Font font = new Font(nextPieceLabel.getFont().getName(), Font.PLAIN, 12);
 
         nextPieceLabel.setFont(font);
         upcomingPieceName.setFont(font);

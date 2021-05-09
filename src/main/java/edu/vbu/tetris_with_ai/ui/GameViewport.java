@@ -9,51 +9,40 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.net.URL;
 
-public class GameWindow extends JFrame {
+public class GameViewport extends JPanel {
 
-    private static final Logger LOG = LogManager.getLogger(GameWindow.class);
+    private static final Logger LOG = LogManager.getLogger(GameViewport.class);
 
     private final TetrisGame tetrisGame;
+    private final boolean userInputMapped;
 
     private JPanel gameFuture;
     private JPanel gameStats;
     private JPanel topSideFiller;
+    private JPanel bottomSideFiller;
 
-    public GameWindow(String windowTitle, TetrisGame tetrisGame, boolean bMapUserInput) {
-        super(windowTitle);
 
+    public GameViewport(String gameLabel, TetrisGame tetrisGame, boolean mapUserInput) {
         this.tetrisGame = tetrisGame;
 
         setSize(Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT);
-        setResizable(false);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        setIcon();
-        if (bMapUserInput) {
+        this.userInputMapped = mapUserInput;
+
+        if (this.userInputMapped) {
             setUpUserInputMappings();
         }
         setUpCallbacks();
 
-        add(createMainPanel());
-
-        // Position to center of screen.
-        setLocationRelativeTo(null);
+        add(createMainPanel(gameLabel));
     }
 
-    public void displayWindow() {
-        setVisible(true);
+    public boolean isUserInputMapped() {
+        return userInputMapped;
     }
 
-    private void setIcon() {
-        URL tetrisIconResource = ClassLoader.getSystemResource(Constants.WINDOW_ICON_PATH);
-        Image tetrisIcon = Toolkit.getDefaultToolkit().createImage(tetrisIconResource);
-
-        setIconImage(tetrisIcon);
-    }
-
-    private JPanel createMainPanel() {
+    private JPanel createMainPanel(String gameLabel) {
         Color mainPanelColour = Color.black;
 
         JPanel mainPanel = new JPanel(new BorderLayout());
@@ -62,10 +51,7 @@ public class GameWindow extends JFrame {
         gameStats = createStatsPanel(mainPanelColour);
         gameFuture = createFuturePiecePanel(mainPanelColour);
         topSideFiller = createTopSideFillerPanel(mainPanelColour);
-
-        JPanel bottomSideFiller = new JPanel();
-        bottomSideFiller.setBackground(mainPanelColour);
-        bottomSideFiller.setPreferredSize(new Dimension(Constants.WINDOW_WIDTH, (int) (Constants.WINDOW_HEIGHT * Constants.BOTTOM_FILLER_SPACE_HEIGHT_PERCENTAGE)));
+        bottomSideFiller = createBottomSideFillerPanel(mainPanelColour, gameLabel);
 
         mainPanel.add(tetrisGame.getGameGrid(), BorderLayout.CENTER);
         mainPanel.add(gameStats, BorderLayout.WEST);
@@ -85,13 +71,6 @@ public class GameWindow extends JFrame {
 
             @Override
             public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-                    LOG.debug("Closing game window via Escape key press event.");
-
-                    tetrisGame.endGame();
-                    dispose();
-                }
-
                 if (e.getKeyCode() == KeyEvent.VK_DOWN) {
                     tetrisGame.movePieceDownOneRow();
                 }
@@ -158,6 +137,17 @@ public class GameWindow extends JFrame {
         topFillerPanel.add(new StatusComponent(backgroundColour));
 
         return topFillerPanel;
+    }
+
+    private JPanel createBottomSideFillerPanel(Color backgroundColour, String gameLabel) {
+        JPanel bottomFillerPanel = new JPanel();
+        bottomFillerPanel.setBackground(backgroundColour);
+        bottomFillerPanel.setPreferredSize(new Dimension(Constants.WINDOW_WIDTH, (int) (Constants.WINDOW_HEIGHT * Constants.BOTTOM_FILLER_SPACE_HEIGHT_PERCENTAGE)));
+        bottomFillerPanel.setLayout(new BoxLayout(bottomFillerPanel, BoxLayout.Y_AXIS));
+
+        bottomFillerPanel.add(new LabelComponent(backgroundColour, gameLabel));
+
+        return bottomFillerPanel;
     }
 
     private void updateLevelAndScoreLabel(int level, int score) {
