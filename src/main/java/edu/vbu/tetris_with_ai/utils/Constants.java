@@ -33,8 +33,8 @@ public abstract class Constants {
     public static final Color BACKGROUND_COLOUR = Color.black;
     public static final Color EMPTY_CELL_COLOUR = Color.darkGray;
 
-    public static final int WINDOW_WIDTH = 300 + CELL_COUNT_HORIZONTALLY * CELL_SIZE * 10;
-    public static final int WINDOW_HEIGHT = 200 + CELL_COUNT_VERTICALLY * CELL_SIZE * 10;
+    public static final int  WINDOW_WIDTH = 260 + CELL_COUNT_HORIZONTALLY * CELL_SIZE * 10;
+    public static final int WINDOW_HEIGHT = 160 +   CELL_COUNT_VERTICALLY * CELL_SIZE * 10;
 
     // How much of the total window height should be allocated for each empty area (up and bottom).
     public static final double TOP_FILLER_SPACE_HEIGHT_PERCENTAGE = 0.1;
