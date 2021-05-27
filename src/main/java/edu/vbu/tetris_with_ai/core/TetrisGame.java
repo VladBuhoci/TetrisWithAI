@@ -10,6 +10,7 @@ import edu.vbu.tetris_with_ai.utils.VoidFunctionTwoArgs;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.awt.*;
 import java.util.Optional;
 
 /**
@@ -59,33 +60,37 @@ public final class TetrisGame {
 
         // Create a thread that brings the current piece down at fixed rates.
         pieceDescendingThread = new Thread(() -> {
-            while (isGameSessionRunning) {
-                if (gameGrid.isPieceCollidingBottom()) {
-                    int clearedRows = gameGrid.tryClearCompletedHorizLines();
-                    if (clearedRows > 0) {
-                        // If there were any completed (and cleared by now) horizontal lines, raise the score accordingly.
-                        increaseScore(clearedRows);
+            try {
+                while (isGameSessionRunning) {
+                    if (gameGrid.isPieceCollidingBottom()) {
+                        int clearedRows = gameGrid.tryClearCompletedHorizLines();
+                        if (clearedRows > 0) {
+                            // If there were any completed (and cleared by now) horizontal lines, raise the score accordingly.
+                            increaseScore(clearedRows);
+                        }
+
+                        try {
+                            spawnNewPiece();
+                        } catch (IllegalStateException e) {
+                            // Failure to apply the new piece's colours in one or more cells means the place is already (partially) occupied by other piece(s).
+                            // Consider it to be game over.
+                            endGame(false);
+                        }
+                    } else {
+                        gameGrid.movePieceDownOneRow();
                     }
 
-                    try {
-                        spawnNewPiece();
-                    } catch (IllegalStateException e) {
-                        // Failure to apply the new piece's colours in one or more cells means the place is already (partially) occupied by other piece(s).
-                        // Consider it to be game over.
-                        endGame();
-                    }
-                } else {
-                    gameGrid.movePieceDownOneRow();
+                    waitForMillis(getWaitTimeForCurrentLevel());
                 }
-
-                waitForMillis(getWaitTimeForCurrentLevel());
+            } catch (Exception e) {
+                endGame(true);
             }
         }, "PieceElevatorThread-" + Thread.currentThread().getId());
 
         pieceDescendingThread.start();
     }
 
-    public void endGame() {
+    public void endGame(boolean highlightGameHadError) {
         if (isGameSessionRunning) {
             LOG.info("Stopping game thread.");
 
@@ -93,6 +98,10 @@ public final class TetrisGame {
 
             if (pieceDescendingThread != null && pieceDescendingThread.isAlive()) {
                 pieceDescendingThread.interrupt();
+            }
+
+            if (highlightGameHadError) {
+                gameGrid.setBackground(Color.red);
             }
 
             Optional.ofNullable(onGameOverCallback).ifPresent(VoidFunctionNoArg::call);
@@ -120,14 +129,24 @@ public final class TetrisGame {
     }
 
     public void performAction(Action action) {
-        LOG.debug("Performing the following action upon current Tetris game: {}", () -> action);
+        LOG.debug("Performing the following action upon current Tetris game and shape [{}] : {}", gameGrid::getCurrFallPiece, () -> action);
 
         switch (action) {
-            case MOVE_DOWN_ONCE:    movePieceDownOneRow();      break;
-            case MOVE_LEFT_ONCE:    movePieceLeftOneColumn();   break;
-            case MOVE_RIGHT_ONCE:   movePieceRightOneColumn();  break;
-            case ROTATE_LEFT_ONCE:  rotatePieceLeftOnce();      break;
-            case ROTATE_RIGHT_ONCE: rotatePieceRightOnce();     break;
+            case MOVE_DOWN_ONCE:
+                movePieceDownOneRow();
+                break;
+            case MOVE_LEFT_ONCE:
+                movePieceLeftOneColumn();
+                break;
+            case MOVE_RIGHT_ONCE:
+                movePieceRightOneColumn();
+                break;
+            case ROTATE_LEFT_ONCE:
+                rotatePieceLeftOnce();
+                break;
+            case ROTATE_RIGHT_ONCE:
+                rotatePieceRightOnce();
+                break;
 //            case DROP: /* TODO: dropping is not implemented yet. */ break;
 
             default:
@@ -160,9 +179,13 @@ public final class TetrisGame {
     // ~ end of delegates.
 
     private void spawnNewPiece() {
-        gameGrid.setCurrentFallingPiece(getUpcomingPiece());
+        Shape upcomingPiece = getUpcomingPiece();
 
-        Optional.ofNullable(onSpawnPieceCallback).ifPresent(callback -> callback.call(upcomingPiece.getName()));
+        LOG.debug("Spawning next shape: {}", () -> upcomingPiece);
+
+        gameGrid.setCurrentFallingPiece(upcomingPiece);
+
+        Optional.ofNullable(onSpawnPieceCallback).ifPresent(callback -> callback.call(this.upcomingPiece.getName()));
     }
 
     private Shape getUpcomingPiece() {

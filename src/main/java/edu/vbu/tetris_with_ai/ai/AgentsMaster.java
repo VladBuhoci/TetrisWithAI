@@ -7,9 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 public final class AgentsMaster {
 
@@ -48,27 +46,23 @@ public final class AgentsMaster {
 
         isRunning = true;
 
-        // TODO: turn the master thread into a bunch of threads, one for each agent (see if it's worth it, tho).
-
         masterThread = new Thread(() -> {
-            Set<TetrisGame> finishedGames = new HashSet<>(gamesAndAgents.size());
+            gamesAndAgents.forEach((game, agent) -> {
+                new Thread(() -> {
+                    while (isRunning) {
+                        if (!game.isGameOver()) {
+                            Action nextAction = agent.getNextAction(game);
+                            game.performAction(nextAction);
+                        } else {
+                            LOG.info("Agent [{}] has finished its game, removing it from master's pool..", agent::getName);
+                            gamesAndAgents.remove(game);
+                            break;
+                        }
 
-            while (isRunning) {
-                gamesAndAgents.forEach((game, agent) -> {
-                    if (!game.isGameOver()) {
-                        Action nextAction = agent.getNextAction(game);
-                        game.performAction(nextAction);
-                    } else {
-                        LOG.info("Agent [{}] has finished its game, removing it from master's pool..", agent::getName);
-                        finishedGames.add(game);
+                        waitForMillis(Constants.AI_WAIT_TIME_MILLIS_BEFORE_NEXT_MOVE);
                     }
-                });
-
-                gamesAndAgents.entrySet().removeIf(entry -> finishedGames.contains(entry.getKey()));
-                finishedGames.clear();
-
-                waitForMillis(Constants.AI_WAIT_TIME_MILLIS_BEFORE_NEXT_MOVE);
-            }
+                }).start();
+            });
         });
 
         masterThread.start();

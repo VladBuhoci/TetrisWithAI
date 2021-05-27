@@ -4,12 +4,16 @@ import com.sun.istack.internal.Nullable;
 import edu.vbu.tetris_with_ai.core.Position;
 import edu.vbu.tetris_with_ai.core.shapes.Null;
 import edu.vbu.tetris_with_ai.core.shapes.Shape;
+import edu.vbu.tetris_with_ai.utils.MathUtils;
 import edu.vbu.tetris_with_ai.utils.VoidFunctionNoArg;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.Semaphore;
 
 import static edu.vbu.tetris_with_ai.utils.Constants.BACKGROUND_COLOUR;
 import static edu.vbu.tetris_with_ai.utils.Constants.EMPTY_CELL_COLOUR;
@@ -22,9 +26,13 @@ import static edu.vbu.tetris_with_ai.utils.Constants.EMPTY_CELL_COLOUR;
  */
 public class GameGrid extends JPanel {
 
+    private static final Logger LOG = LogManager.getLogger(GameGrid.class);
+
     private final JPanel[][] gridCells;
     private final int rowCount;
     private final int columnCount;
+
+    private final Semaphore semaphore = new Semaphore(1);
 
     private Shape currFallPiece;
     private int fallingPieceRowIndex, fallingPieceColumnIndex;
@@ -59,6 +67,14 @@ public class GameGrid extends JPanel {
      */
     public void setCurrentFallingPiece(Shape fallingPiece) throws IllegalStateException {
         if (currFallPiece != fallingPiece) {
+            try {
+                semaphore.acquire();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            LOG.trace("Updating current piece from {} to {}", () -> currFallPiece, () -> fallingPiece);
+
             if (currFallPiece != null) {
                 // Darken the now-abandoned piece (to easily distinguish between static pieces and the falling one + collision detection is partially based on colours!!).
                 determineCellColoursForFallingPieceForced(currFallPiece.getColour().darker());
@@ -66,30 +82,62 @@ public class GameGrid extends JPanel {
 
             resetFallingPiece(fallingPiece);
             determineCellColoursForFallingPiece(currFallPiece.getColour());
+
+            semaphore.release();
         }
     }
 
     public void movePieceDownOneRow() {
         if (currFallPiece != null && !isPieceCollidingBottom()) {
+            try {
+                semaphore.acquire();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            LOG.trace("Moving current piece [{}] down one row", () -> currFallPiece);
+
             determineCellColoursForFallingPiece(EMPTY_CELL_COLOUR);
             movePieceVerticallyInternal(+1);
             determineCellColoursForFallingPiece(currFallPiece.getColour());
+
+            semaphore.release();
         }
     }
 
     public void movePieceLeftOneColumn() {
         if (currFallPiece != null && !isPieceTouchingLeftWall() && !isPieceTouchingOtherPieceLeft()) {
+            try {
+                semaphore.acquire();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            LOG.trace("Moving current piece [{}] left one column", () -> currFallPiece);
+
             determineCellColoursForFallingPiece(EMPTY_CELL_COLOUR);
             movePieceHorizontallyInternal(-1);
             determineCellColoursForFallingPiece(currFallPiece.getColour());
+
+            semaphore.release();
         }
     }
 
     public void movePieceRightOneColumn() {
         if (currFallPiece != null && !isPieceTouchingRightWall() && !isPieceTouchingOtherPieceRight()) {
+            try {
+                semaphore.acquire();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            LOG.trace("Moving current piece [{}] right one column", () -> currFallPiece);
+
             determineCellColoursForFallingPiece(EMPTY_CELL_COLOUR);
             movePieceHorizontallyInternal(+1);
             determineCellColoursForFallingPiece(currFallPiece.getColour());
+
+            semaphore.release();
         }
     }
 
@@ -103,6 +151,10 @@ public class GameGrid extends JPanel {
 
     public boolean isPieceCollidingBottom() {
         return isPieceTouchingFloor() || isPieceTouchingOtherPieceDown();
+    }
+
+    public Shape getCurrFallPiece() {
+        return currFallPiece;
     }
 
     /**
@@ -188,6 +240,11 @@ public class GameGrid extends JPanel {
         currFallPiece.getOccupiedCellPositions().forEach(pos -> {
             int rowIndex = fallingPieceRowIndex + pos.getPosX();
             int columnIndex = fallingPieceColumnIndex + pos.getPosY();
+
+            // Clamp indices
+            rowIndex = MathUtils.clamp(rowIndex, 0, rowCount - 1);
+            columnIndex = MathUtils.clamp(columnIndex, 0, columnCount - 1);
+
             JPanel cell = gridCells[rowIndex][columnIndex];
 
             if (cell.getBackground() == BACKGROUND_COLOUR) {
@@ -198,7 +255,7 @@ public class GameGrid extends JPanel {
 
             if (!forceRecolouring && cell.getBackground() != EMPTY_CELL_COLOUR && newColour != EMPTY_CELL_COLOUR) {
                 previousCellColours.keySet().forEach(prevCellState -> prevCellState.setBackground(previousCellColours.get(prevCellState)));
-                throw new IllegalStateException("Tried to recolour an already coloured cell at position [" + rowIndex + ", " + columnIndex + "]");
+                throw new IllegalStateException("Tried to recolour an already coloured cell at position [" + rowIndex + ", " + columnIndex + "] (" + currFallPiece + ")");
             }
 
             cell.setBackground(newColour);
@@ -353,10 +410,18 @@ public class GameGrid extends JPanel {
 
     private void rotatePieceOnceInternal(VoidFunctionNoArg rotationImplementation, VoidFunctionNoArg rollbackImplementation) {
         if (currFallPiece != null) {
+            try {
+                semaphore.acquire();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
             determineCellColoursForFallingPiece(EMPTY_CELL_COLOUR);
 
             // Test collision with left, right and bottom sides after applying the rotation.
             // If colliding with a wall, forcefully translate the current piece in the opposite direction.
+
+            LOG.trace("Applying rotation to current piece [{}]", () -> currFallPiece);
 
             rotationImplementation.call();
 
@@ -394,8 +459,17 @@ public class GameGrid extends JPanel {
             try {
                 determineCellColoursForFallingPiece(currFallPiece.getColour());
             } catch (IllegalStateException e) {
+                LOG.debug("Rolling back last rotation for piece [{}] ...", () -> currFallPiece);
+
                 rollbackImplementation.call();
-                determineCellColoursForFallingPiece(currFallPiece.getColour());
+
+                try {
+                    determineCellColoursForFallingPiece(currFallPiece.getColour());
+                } catch (IllegalStateException e1) {
+                    LOG.warn("Ignoring an exception caused by failed colour shifting for piece {}: {}", () -> currFallPiece, () -> e1);
+                }
+            } finally {
+                semaphore.release();
             }
         }
     }

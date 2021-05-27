@@ -14,7 +14,7 @@ public class TetrisForMultipleRandomAIs {
     private static final Logger LOG = LogManager.getLogger(TetrisForMultipleRandomAIs.class);
 
     public static void main(String[] args) {
-        int gamesPerRow = 4, gamesPerColumn = 2, totalGames = gamesPerRow * gamesPerColumn;
+        int gamesPerRow = 5, gamesPerColumn = 2, totalGames = gamesPerRow * gamesPerColumn;
 
         LOG.info("Starting {} standalone Tetris game(s) with UI for {} AI(s) with random moves...", () -> totalGames, () -> totalGames);
 
