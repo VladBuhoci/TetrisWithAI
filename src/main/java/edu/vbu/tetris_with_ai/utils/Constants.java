@@ -12,8 +12,8 @@ public abstract class Constants {
     //      Core game settings:
     //======================================================================
 
-    public static final int CELL_COUNT_HORIZONTALLY = 8;
-    public static final int CELL_COUNT_VERTICALLY = 16;
+    public static final int CELL_COUNT_HORIZONTALLY = 10;
+    public static final int CELL_COUNT_VERTICALLY = 20;
 
     public static final int LINES_REQUIRED_FOR_LEVEL_UP = 10;
 
@@ -48,5 +48,5 @@ public abstract class Constants {
     //      AI settings:
     //======================================================================
 
-    public static final long AI_WAIT_TIME_MILLIS_BEFORE_NEXT_MOVE = 50L;
+    public static final long AI_WAIT_TIME_MILLIS_BEFORE_NEXT_MOVE = 10L;
 }

@@ -14,7 +14,7 @@ public class TetrisForMultipleRandomAIs {
     private static final Logger LOG = LogManager.getLogger(TetrisForMultipleRandomAIs.class);
 
     public static void main(String[] args) {
-        int gamesPerRow = 5, gamesPerColumn = 2, totalGames = gamesPerRow * gamesPerColumn;
+        int gamesPerRow = 7, gamesPerColumn = 3, totalGames = gamesPerRow * gamesPerColumn;
 
         LOG.info("Starting {} standalone Tetris game(s) with UI for {} AI(s) with random moves...", () -> totalGames, () -> totalGames);
 
@@ -25,7 +25,7 @@ public class TetrisForMultipleRandomAIs {
             int gameID = k + 1;
 
             TetrisGame tetrisGame = new TetrisGame();
-            tetrisGame.startGame(Constants.GAME_START_INITIAL_DELAY);
+            tetrisGame.startGame(Constants.GAME_START_INITIAL_DELAY, false);
 
             GameViewport gameViewport = new GameViewport("Tetris for random AI #" + gameID, tetrisGame, false);
             gameCompositeWindow.addViewport(gameViewport);

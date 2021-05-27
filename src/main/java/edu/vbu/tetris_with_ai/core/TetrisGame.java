@@ -43,6 +43,10 @@ public final class TetrisGame {
     }
 
     public void startGame(long initialDelay) {
+        startGame(initialDelay, true);
+    }
+
+    public void startGame(long initialDelay, boolean startGameLoop) {
         LOG.info("Starting game thread.");
 
         // Spawn initial piece.
@@ -55,39 +59,24 @@ public final class TetrisGame {
         level = 0;
         clearedLinesCount = 0;
 
-        // Initial delay.
-        waitForMillis(initialDelay);
+        if (startGameLoop) {
+            // Initial delay.
+            waitForMillis(initialDelay);
 
-        // Create a thread that brings the current piece down at fixed rates.
-        pieceDescendingThread = new Thread(() -> {
-            try {
-                while (isGameSessionRunning) {
-                    if (gameGrid.isPieceCollidingBottom()) {
-                        int clearedRows = gameGrid.tryClearCompletedHorizLines();
-                        if (clearedRows > 0) {
-                            // If there were any completed (and cleared by now) horizontal lines, raise the score accordingly.
-                            increaseScore(clearedRows);
-                        }
-
-                        try {
-                            spawnNewPiece();
-                        } catch (IllegalStateException e) {
-                            // Failure to apply the new piece's colours in one or more cells means the place is already (partially) occupied by other piece(s).
-                            // Consider it to be game over.
-                            endGame(false);
-                        }
-                    } else {
-                        gameGrid.movePieceDownOneRow();
+            // Create a thread that brings the current piece down at fixed rates.
+            pieceDescendingThread = new Thread(() -> {
+                try {
+                    while (isGameSessionRunning) {
+                        gameLoopSingleCycle();
+                        waitForMillis(getWaitTimeForCurrentLevel());
                     }
-
-                    waitForMillis(getWaitTimeForCurrentLevel());
+                } catch (Exception e) {
+                    endGame(true);
                 }
-            } catch (Exception e) {
-                endGame(true);
-            }
-        }, "PieceElevatorThread-" + Thread.currentThread().getId());
+            }, "PieceElevatorThread-" + Thread.currentThread().getId());
 
-        pieceDescendingThread.start();
+            pieceDescendingThread.start();
+        }
     }
 
     public void endGame(boolean highlightGameHadError) {
@@ -105,6 +94,26 @@ public final class TetrisGame {
             }
 
             Optional.ofNullable(onGameOverCallback).ifPresent(VoidFunctionNoArg::call);
+        }
+    }
+
+    public void gameLoopSingleCycle() throws Exception {
+        if (gameGrid.isPieceCollidingBottom()) {
+            int clearedRows = gameGrid.tryClearCompletedHorizLines();
+            if (clearedRows > 0) {
+                // If there were any completed (and cleared by now) horizontal lines, raise the score accordingly.
+                increaseScore(clearedRows);
+            }
+
+            try {
+                spawnNewPiece();
+            } catch (IllegalStateException e) {
+                // Failure to apply the new piece's colours in one or more cells means the place is already (partially) occupied by other piece(s).
+                // Consider it to be game over.
+                endGame(false);
+            }
+        } else {
+            gameGrid.movePieceDownOneRow();
         }
     }
 
