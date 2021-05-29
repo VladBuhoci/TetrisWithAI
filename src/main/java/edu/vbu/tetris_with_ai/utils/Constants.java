@@ -12,8 +12,8 @@ public abstract class Constants {
     //      Core game settings:
     //======================================================================
 
-    public static final int CELL_COUNT_HORIZONTALLY = 10;
-    public static final int CELL_COUNT_VERTICALLY = 20;
+    public static final int CELL_COUNT_HORIZONTALLY = 7;
+    public static final int CELL_COUNT_VERTICALLY = 14;
 
     public static final int LINES_REQUIRED_FOR_LEVEL_UP = 10;
 
@@ -49,4 +49,7 @@ public abstract class Constants {
     //======================================================================
 
     public static final long AI_WAIT_TIME_MILLIS_BEFORE_NEXT_MOVE = 10L;
+
+    // The higher the value (percentage), the higher the chance for a gene of a child agent to mutate.
+    public static final float AI_GENES_MUTATION_RATE = 10.0f;
 }

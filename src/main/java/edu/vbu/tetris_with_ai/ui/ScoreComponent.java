@@ -24,7 +24,7 @@ public class ScoreComponent extends JPanel {
         scoreValue = new JLabel();
         scoreValue.setForeground(Color.white);
 
-        Font font = new Font(scoreLabel.getFont().getName(), Font.PLAIN, 14);
+        Font font = new Font(scoreLabel.getFont().getName(), Font.PLAIN, 12);
 
         levelLabel.setFont(font);
         levelValue.setFont(font);

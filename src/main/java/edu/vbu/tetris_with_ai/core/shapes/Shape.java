@@ -20,6 +20,45 @@ public abstract class Shape {
         return name;
     }
 
+    public int getHorizontalLength() {
+        List<Position> cellPositions = getOccupiedCellPositions();
+
+        int columnMin = Integer.MAX_VALUE;
+        int columnMax = Integer.MIN_VALUE;
+
+        for (Position cellPosition : cellPositions) {
+            if (columnMin > cellPosition.getPosY()) {
+                columnMin = cellPosition.getPosY();
+            }
+
+            if (columnMax < cellPosition.getPosY()) {
+                columnMax = cellPosition.getPosY();
+            }
+        }
+
+        return columnMax - columnMin + 1;
+    }
+
+    public Shape duplicate() {
+        Shape clone = Shapes.cloneShape(this);
+        clone.currentOrientation = this.currentOrientation;
+
+        return clone;
+    }
+
+    public int getHorizontalEmptyCellsOffset() {
+        List<Position> cellPositions = getOccupiedCellPositions();
+        int columnMin = Integer.MAX_VALUE;
+
+        for (Position cellPosition : cellPositions) {
+            if (columnMin > cellPosition.getPosY()) {
+                columnMin = cellPosition.getPosY();
+            }
+        }
+
+        return columnMin;
+    }
+
     public abstract void rotateLeft();
     public abstract void rotateRight();
 

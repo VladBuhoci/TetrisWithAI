@@ -12,8 +12,8 @@ public class LabelComponent extends JPanel {
         setLayout(new GridBagLayout());
 
         this.label = new JLabel(label);
-        this.label.setForeground(Color.white);
-        this.label.setFont(new Font(this.label.getFont().getName(), Font.PLAIN, 24));
+        this.label.setForeground(Color.lightGray);
+        this.label.setFont(new Font(this.label.getFont().getName(), Font.PLAIN, 20));
 
         add(this.label);
     }

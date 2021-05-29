@@ -24,7 +24,7 @@ public final class TetrisGame {
 
     private static final Logger LOG = LogManager.getLogger(TetrisGame.class);
 
-    private final GameGrid gameGrid;
+    private GameGrid gameGrid;
 
     private VoidFunctionNoArg onGameOverCallback;
     private VoidFunctionOneArg<String> onSpawnPieceCallback;
@@ -137,6 +137,10 @@ public final class TetrisGame {
         return gameGrid;
     }
 
+    public void setGameGrid(GameGrid gameGrid) {
+        this.gameGrid = gameGrid;
+    }
+
     public void performAction(Action action) {
         LOG.debug("Performing the following action upon current Tetris game and shape [{}] : {}", gameGrid::getCurrFallPiece, () -> action);
 
@@ -156,7 +160,9 @@ public final class TetrisGame {
             case ROTATE_RIGHT_ONCE:
                 rotatePieceRightOnce();
                 break;
-//            case DROP: /* TODO: dropping is not implemented yet. */ break;
+            case DROP:
+                instantDropPiece();
+                break;
 
             default:
                 break;
@@ -183,6 +189,10 @@ public final class TetrisGame {
 
     public void rotatePieceRightOnce() {
         gameGrid.rotatePieceRightOnce();
+    }
+
+    public void instantDropPiece() {
+        gameGrid.instantDropPiece();
     }
 
     // ~ end of delegates.

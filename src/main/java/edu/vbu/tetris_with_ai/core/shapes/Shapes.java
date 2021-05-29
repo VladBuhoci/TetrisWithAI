@@ -28,4 +28,16 @@ public abstract class Shapes {
 
         return null;
     }
+
+    public static Shape cloneShape(Shape original) {
+        Class<? extends Shape> shapeType = original.getClass();
+
+        try {
+            return shapeType.getConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            LOG.error("Failed to clone a shape of type {} due to error: {}", shapeType::getName, () -> e);
+        }
+
+        return null;
+    }
 }

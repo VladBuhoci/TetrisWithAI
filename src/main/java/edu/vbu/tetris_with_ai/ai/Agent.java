@@ -7,10 +7,13 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
+import java.util.Random;
 
 public abstract class Agent {
 
     private static final Logger LOG = LogManager.getLogger(Agent.class);
+
+    protected static final Random RANDOM = new Random(System.currentTimeMillis());
 
     private final int id;
     private final Queue<Action> actions;

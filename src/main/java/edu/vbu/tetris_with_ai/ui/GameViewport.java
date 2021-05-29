@@ -27,6 +27,7 @@ public class GameViewport extends JPanel {
         this.tetrisGame = tetrisGame;
 
         setSize(Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT);
+        setDoubleBuffered(Constants.IS_DOUBLE_BUFFERED);
 
         this.userInputMapped = mapUserInput;
 
@@ -89,7 +90,7 @@ public class GameViewport extends JPanel {
                 }
 
                 if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-                    // TODO: drop the current piece all the way down.
+                    tetrisGame.instantDropPiece();
                 }
             }
 

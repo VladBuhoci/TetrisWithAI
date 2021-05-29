@@ -48,20 +48,20 @@ public final class AgentsMaster {
 
         masterThread = new Thread(() -> gamesAndAgents.forEach((game, agent) -> new Thread(() -> {
             while (isRunning) {
-                try {
-                    game.gameLoopSingleCycle();
-                } catch (Exception e) {
-                    LOG.error("An error occurred during an agent game's loop cycle", e);
-                    game.endGame(true);
-                    gamesAndAgents.remove(game);
-                    break;
-                }
-
                 if (!game.isGameOver()) {
                     Action nextAction = agent.getNextAction(game);
                     game.performAction(nextAction);
                 } else {
                     LOG.info("Agent [{}] has finished its game, removing it from master's pool..", agent::getName);
+                    gamesAndAgents.remove(game);
+                    break;
+                }
+
+                try {
+                    game.gameLoopSingleCycle();
+                } catch (Exception e) {
+                    LOG.error("An error occurred during an agent game's loop cycle", e);
+                    game.endGame(true);
                     gamesAndAgents.remove(game);
                     break;
                 }

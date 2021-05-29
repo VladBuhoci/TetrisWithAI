@@ -7,5 +7,5 @@ public enum Action {
     MOVE_RIGHT_ONCE,
     ROTATE_LEFT_ONCE,
     ROTATE_RIGHT_ONCE,
-//    DROP
+    DROP
 }

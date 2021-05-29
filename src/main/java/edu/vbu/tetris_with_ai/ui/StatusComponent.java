@@ -12,8 +12,8 @@ public class StatusComponent extends JPanel {
         setLayout(new GridBagLayout());
 
         status = new JLabel();
-        status.setForeground(Color.white);
-        status.setFont(new Font(status.getFont().getName(), Font.PLAIN, 30));
+        status.setForeground(Color.red);
+        status.setFont(new Font(status.getFont().getName(), Font.PLAIN, 26));
 
         setStatusGameOver(false);
 
