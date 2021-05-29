@@ -5,6 +5,7 @@ import edu.vbu.tetris_with_ai.core.TetrisGame;
 import edu.vbu.tetris_with_ai.core.shapes.Shape;
 import edu.vbu.tetris_with_ai.ui.GameGrid;
 import edu.vbu.tetris_with_ai.utils.Constants;
+import edu.vbu.tetris_with_ai.utils.MathUtils;
 import edu.vbu.tetris_with_ai.utils.TetrisUtils;
 
 import javax.swing.*;
@@ -18,25 +19,25 @@ import java.util.Queue;
  */
 public class GeneticAlgoAgent extends Agent {
 
-    private float weightForHeight;
-    private float weightForHoles;
-    private float weightForBumpiness;
-    private float weightForLineClear;
+    private double weightForHeight;
+    private double weightForHoles;
+    private double weightForBumpiness;
+    private double weightForLineClear;
 
-    public GeneticAlgoAgent(int id) {
+    public GeneticAlgoAgent(long id) {
         super(id);
 
-        weightForHeight = RANDOM.nextFloat();
-        weightForHoles = RANDOM.nextFloat();
-        weightForBumpiness = RANDOM.nextFloat();
-        weightForLineClear = RANDOM.nextFloat();
+        weightForHeight = getRandomWeight();
+        weightForHoles = getRandomWeight();
+        weightForBumpiness = getRandomWeight();
+        weightForLineClear = getRandomWeight();
     }
 
     @Override
     protected void determineActions(Queue<Action> actionQueueToFill, int actionAmount, TetrisGame game) {
         // Fill action queue based on the agent's prediction.
 
-        int bestFitness = Integer.MIN_VALUE;
+        double bestFitness = Double.MIN_VALUE;
         int bestRotationCount = -1;             // determines how many rotations (clockwise) need to be applied to the piece.
         int bestPositionOnRow = -1;             // determines how many moves to the left or to the right need to be applied to the piece.
 
@@ -53,7 +54,7 @@ public class GeneticAlgoAgent extends Agent {
 
             for (int positionX = 0; positionX < possibleSlotsToOccupyOnRow; positionX++) {
                 GameGrid futureGrid = gameGrid.getFutureGridWithCurrentPieceInFinalPosition(pieceClone, positionX - emptyCellsInPieceSchemaOffset);
-                int fitness = getFitness(futureGrid);
+                double fitness = getFitness(futureGrid);
 
 //                game.setGameGrid(futureGrid);
 
@@ -90,8 +91,8 @@ public class GeneticAlgoAgent extends Agent {
         return "genetic-AI-" + getId();
     }
 
-    private int getFitness(GameGrid gameGrid) {
-        int score = 0;
+    private double getFitness(GameGrid gameGrid) {
+        double score = 0.0;
         int clearedLinesLastCycle = getCurrentCompleteRowIndices(gameGrid);
         int[] gameGridColumnHeights = getGameGridColumnHeights(gameGrid);
 
@@ -109,7 +110,7 @@ public class GeneticAlgoAgent extends Agent {
      * @param otherParent the other "parent" agent.
      * @return the "child" agent.
      */
-    private GeneticAlgoAgent crossOver(GeneticAlgoAgent otherParent) {
+    public GeneticAlgoAgent crossOver(GeneticAlgoAgent otherParent) {
         GeneticAlgoAgent child = new GeneticAlgoAgent(TetrisUtils.getNextAgentID());
 
         // Choose the weights for the child, from this agent or the other one, randomly.
@@ -119,17 +120,29 @@ public class GeneticAlgoAgent extends Agent {
         child.weightForLineClear = RANDOM.nextBoolean() ? this.weightForLineClear : otherParent.weightForLineClear;
 
         // Mutate the weights of the child, randomly.
-        if (RANDOM.nextFloat() < Constants.AI_GENES_MUTATION_RATE) {
-            child.weightForHeight = getRandomWeight();
+        if (RANDOM.nextDouble() < Constants.AI_GENES_MUTATION_RATE) {
+            double factor = RANDOM.nextBoolean() ? 1 : -1;
+
+            child.weightForHeight += getRandomWeight() / 2.0 * factor;
+            child.weightForHeight = MathUtils.clamp(child.weightForHeight, -1.0, 1.0);
         }
-        if (RANDOM.nextFloat() < Constants.AI_GENES_MUTATION_RATE) {
-            child.weightForHoles = getRandomWeight();
+        if (RANDOM.nextDouble() < Constants.AI_GENES_MUTATION_RATE) {
+            double factor = RANDOM.nextBoolean() ? 1 : -1;
+
+            child.weightForHoles += getRandomWeight() / 2.0 * factor;
+            child.weightForHeight = MathUtils.clamp(child.weightForHeight, -1.0, 1.0);
         }
-        if (RANDOM.nextFloat() < Constants.AI_GENES_MUTATION_RATE) {
-            child.weightForBumpiness = getRandomWeight();
+        if (RANDOM.nextDouble() < Constants.AI_GENES_MUTATION_RATE) {
+            double factor = RANDOM.nextBoolean() ? 1 : -1;
+
+            child.weightForBumpiness += getRandomWeight() / 2.0 * factor;
+            child.weightForHeight = MathUtils.clamp(child.weightForHeight, -1.0, 1.0);
         }
-        if (RANDOM.nextFloat() < Constants.AI_GENES_MUTATION_RATE) {
-            child.weightForLineClear = getRandomWeight();
+        if (RANDOM.nextDouble() < Constants.AI_GENES_MUTATION_RATE) {
+            double factor = RANDOM.nextBoolean() ? 1 : -1;
+
+            child.weightForLineClear += getRandomWeight() / 2.0 * factor;
+            child.weightForHeight = MathUtils.clamp(child.weightForHeight, -1.0, 1.0);
         }
 
         return child;
@@ -200,7 +213,7 @@ public class GeneticAlgoAgent extends Agent {
         return bumpiness;
     }
 
-    private float getRandomWeight() {
-        return RANDOM.nextFloat() * 2.0f - 1.0f;    // map [0, 1] to [-1, 1]
+    private double getRandomWeight() {
+        return RANDOM.nextDouble() * 2.0f - 1.0f;    // map [0, 1] to [-1, 1]
     }
 }

@@ -17,4 +17,8 @@ public class LabelComponent extends JPanel {
 
         add(this.label);
     }
+
+    public void setLabel(String newLabel) {
+        label.setText(newLabel);
+    }
 }

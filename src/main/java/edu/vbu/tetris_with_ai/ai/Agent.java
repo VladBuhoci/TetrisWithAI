@@ -15,10 +15,10 @@ public abstract class Agent {
 
     protected static final Random RANDOM = new Random(System.currentTimeMillis());
 
-    private final int id;
+    private final long id;
     private final Queue<Action> actions;
 
-    public Agent(int id) {
+    public Agent(long id) {
         this.id = id;
         this.actions = new ArrayDeque<>(4);
     }
@@ -33,7 +33,7 @@ public abstract class Agent {
         return actions.poll();
     }
 
-    protected int getId() {
+    protected long getId() {
         return id;
     }
 

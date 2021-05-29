@@ -8,7 +8,7 @@
     </Appenders>
 
     <Loggers>
-        <Logger name="edu.vbu.tetris_with_ai" level="DEBUG" additivity="false">
+        <Logger name="edu.vbu.tetris_with_ai" level="INFO" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
 

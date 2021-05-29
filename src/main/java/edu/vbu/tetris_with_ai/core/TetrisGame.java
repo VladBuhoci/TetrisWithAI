@@ -3,6 +3,7 @@ package edu.vbu.tetris_with_ai.core;
 import edu.vbu.tetris_with_ai.core.shapes.Shape;
 import edu.vbu.tetris_with_ai.core.shapes.Shapes;
 import edu.vbu.tetris_with_ai.ui.GameGrid;
+import edu.vbu.tetris_with_ai.ui.GameViewport;
 import edu.vbu.tetris_with_ai.utils.Constants;
 import edu.vbu.tetris_with_ai.utils.VoidFunctionNoArg;
 import edu.vbu.tetris_with_ai.utils.VoidFunctionOneArg;
@@ -24,7 +25,10 @@ public final class TetrisGame {
 
     private static final Logger LOG = LogManager.getLogger(TetrisGame.class);
 
+    private long initialDelay;
+
     private GameGrid gameGrid;
+    private GameViewport pairedViewport;
 
     private VoidFunctionNoArg onGameOverCallback;
     private VoidFunctionOneArg<String> onSpawnPieceCallback;
@@ -39,7 +43,7 @@ public final class TetrisGame {
     private int clearedLinesCount;
 
     public TetrisGame() {
-        this.gameGrid = new GameGrid(Constants.CELL_COUNT_HORIZONTALLY, Constants.CELL_COUNT_VERTICALLY, Constants.IS_DOUBLE_BUFFERED);
+        this.gameGrid = initGameGrid();
     }
 
     public void startGame(long initialDelay) {
@@ -48,6 +52,8 @@ public final class TetrisGame {
 
     public void startGame(long initialDelay, boolean startGameLoop) {
         LOG.info("Starting game thread.");
+
+        this.initialDelay = initialDelay;
 
         // Spawn initial piece.
         spawnNewPiece();
@@ -71,7 +77,7 @@ public final class TetrisGame {
                         waitForMillis(getWaitTimeForCurrentLevel());
                     }
                 } catch (Exception e) {
-                    endGame(true);
+                    endGame(EndGameReason.ERROR);
                 }
             }, "PieceElevatorThread-" + Thread.currentThread().getId());
 
@@ -79,7 +85,13 @@ public final class TetrisGame {
         }
     }
 
-    public void endGame(boolean highlightGameHadError) {
+    public enum EndGameReason {
+        NORMAL_END,
+        ERROR,
+        FORCED_BY_TIMEOUT
+    }
+
+    public void endGame(EndGameReason reason) {
         if (isGameSessionRunning) {
             LOG.info("Stopping game thread.");
 
@@ -89,11 +101,27 @@ public final class TetrisGame {
                 pieceDescendingThread.interrupt();
             }
 
-            if (highlightGameHadError) {
-                gameGrid.setBackground(Color.red);
+            if (reason == EndGameReason.ERROR) {
+                pairedViewport.setBackground(Color.red);
+            } else if (reason == EndGameReason.FORCED_BY_TIMEOUT) {
+                pairedViewport.setBackground(Color.orange);
             }
 
             Optional.ofNullable(onGameOverCallback).ifPresent(VoidFunctionNoArg::call);
+        }
+    }
+
+    public void markAsTopGame(boolean isTop) {
+        if (isTop) {
+            pairedViewport.setBackground(Color.green);
+        } else {
+            pairedViewport.setBackground(Constants.BACKGROUND_COLOUR_LIGHT);
+        }
+    }
+
+    public void unmark() {
+        if (pairedViewport.getBackground() != Color.green) {
+            pairedViewport.setBackground(Constants.BACKGROUND_COLOUR_LIGHT);
         }
     }
 
@@ -110,7 +138,7 @@ public final class TetrisGame {
             } catch (IllegalStateException e) {
                 // Failure to apply the new piece's colours in one or more cells means the place is already (partially) occupied by other piece(s).
                 // Consider it to be game over.
-                endGame(false);
+                endGame(EndGameReason.NORMAL_END);
             }
         } else {
             gameGrid.movePieceDownOneRow();
@@ -119,6 +147,17 @@ public final class TetrisGame {
 
     public boolean isGameOver() {
         return !isGameSessionRunning;
+    }
+
+    public void reset(String newGameLabel) {
+        gameGrid = initGameGrid();
+        upcomingPiece = null;
+
+        pairedViewport.setTetrisGame(this);
+        pairedViewport.resetDisplayedData(newGameLabel);
+
+        unmark();
+        startGame(initialDelay, false);
     }
 
     public void setOnGameOverCallback(VoidFunctionNoArg onGameOverCallback) {
@@ -137,8 +176,16 @@ public final class TetrisGame {
         return gameGrid;
     }
 
+    public int getScore() {
+        return score;
+    }
+
     public void setGameGrid(GameGrid gameGrid) {
         this.gameGrid = gameGrid;
+    }
+
+    public void setPairedViewport(GameViewport gameViewport) {
+        this.pairedViewport = gameViewport;
     }
 
     public void performAction(Action action) {
@@ -196,6 +243,10 @@ public final class TetrisGame {
     }
 
     // ~ end of delegates.
+
+    private GameGrid initGameGrid() {
+        return new GameGrid(Constants.CELL_COUNT_HORIZONTALLY, Constants.CELL_COUNT_VERTICALLY, Constants.IS_DOUBLE_BUFFERED);
+    }
 
     private void spawnNewPiece() {
         Shape upcomingPiece = getUpcomingPiece();

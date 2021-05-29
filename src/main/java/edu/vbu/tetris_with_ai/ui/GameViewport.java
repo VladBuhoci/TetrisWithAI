@@ -14,22 +14,26 @@ public class GameViewport extends JPanel {
 
     private static final Logger LOG = LogManager.getLogger(GameViewport.class);
 
-    private final TetrisGame tetrisGame;
     private final boolean userInputMapped;
 
+    private JPanel mainPanel;
     private JPanel gameFuture;
     private JPanel gameStats;
     private JPanel topSideFiller;
     private JPanel bottomSideFiller;
 
+    private TetrisGame tetrisGame;
+    private GameGrid gridToRender;
 
     public GameViewport(String gameLabel, TetrisGame tetrisGame, boolean mapUserInput) {
-        this.tetrisGame = tetrisGame;
+        setTetrisGame(tetrisGame);
 
         setSize(Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT);
         setDoubleBuffered(Constants.IS_DOUBLE_BUFFERED);
+        setBackground(Constants.BACKGROUND_COLOUR_LIGHT);
 
         this.userInputMapped = mapUserInput;
+        this.tetrisGame.setPairedViewport(this);
 
         if (this.userInputMapped) {
             setUpUserInputMappings();
@@ -39,6 +43,26 @@ public class GameViewport extends JPanel {
         add(createMainPanel(gameLabel));
     }
 
+    public void setTetrisGame(TetrisGame tetrisGame) {
+        if (mainPanel != null) {
+            mainPanel.remove(gridToRender);
+        }
+
+        this.tetrisGame = tetrisGame;
+        this.gridToRender = tetrisGame.getGameGrid();
+
+        if (mainPanel != null) {
+            mainPanel.add(gridToRender, BorderLayout.CENTER);
+        }
+    }
+
+    public void resetDisplayedData(String newGameLabel) {
+        updateLevelAndScoreLabel(0, 0);
+        updateUpcomingPieceLabel(null);
+        updateGameStateLabel(false);
+        updateGameIdLabel(newGameLabel);
+    }
+
     public boolean isUserInputMapped() {
         return userInputMapped;
     }
@@ -46,7 +70,7 @@ public class GameViewport extends JPanel {
     private JPanel createMainPanel(String gameLabel) {
         Color mainPanelColour = Color.black;
 
-        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(mainPanelColour);
 
         gameStats = createStatsPanel(mainPanelColour);
@@ -54,7 +78,7 @@ public class GameViewport extends JPanel {
         topSideFiller = createTopSideFillerPanel(mainPanelColour);
         bottomSideFiller = createBottomSideFillerPanel(mainPanelColour, gameLabel);
 
-        mainPanel.add(tetrisGame.getGameGrid(), BorderLayout.CENTER);
+        mainPanel.add(gridToRender, BorderLayout.CENTER);
         mainPanel.add(gameStats, BorderLayout.WEST);
         mainPanel.add(gameFuture, BorderLayout.EAST);
         mainPanel.add(topSideFiller, BorderLayout.NORTH);
@@ -102,7 +126,7 @@ public class GameViewport extends JPanel {
     }
 
     private void setUpCallbacks() {
-        tetrisGame.setOnGameOverCallback(() -> ((StatusComponent) topSideFiller.getComponent(0)).setStatusGameOver(true));
+        tetrisGame.setOnGameOverCallback(() -> updateGameStateLabel(true));
         tetrisGame.setOnSpawnPieceCallback(this::updateUpcomingPieceLabel);
         tetrisGame.setOnScoreIncreasedCallback(this::updateLevelAndScoreLabel);
     }
@@ -157,5 +181,13 @@ public class GameViewport extends JPanel {
 
     private void updateUpcomingPieceLabel(String upcomingPieceName) {
         ((UpcomingPieceComponent) gameFuture.getComponent(0)).setUpcomingPieceName(upcomingPieceName);
+    }
+
+    private void updateGameIdLabel(String label) {
+        ((LabelComponent) bottomSideFiller.getComponent(0)).setLabel(label);
+    }
+
+    private void updateGameStateLabel(boolean isGameOver) {
+        ((StatusComponent) topSideFiller.getComponent(0)).setStatusGameOver(isGameOver);
     }
 }

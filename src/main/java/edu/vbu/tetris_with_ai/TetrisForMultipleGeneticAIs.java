@@ -1,6 +1,6 @@
 package edu.vbu.tetris_with_ai;
 
-import edu.vbu.tetris_with_ai.ai.AgentsMaster;
+import edu.vbu.tetris_with_ai.ai.GeneticAgentsMaster;
 import edu.vbu.tetris_with_ai.ai.GeneticAlgoAgent;
 import edu.vbu.tetris_with_ai.core.TetrisGame;
 import edu.vbu.tetris_with_ai.ui.GameCompositeWindow;
@@ -15,12 +15,12 @@ public class TetrisForMultipleGeneticAIs {
     private static final Logger LOG = LogManager.getLogger(TetrisForMultipleGeneticAIs.class);
 
     public static void main(String[] args) {
-        int gamesPerRow = 1, gamesPerColumn = 1, totalGames = gamesPerRow * gamesPerColumn;
+        int gamesPerRow = 6, gamesPerColumn = 3, totalGames = gamesPerRow * gamesPerColumn;
 
         LOG.info("Starting {} standalone Tetris game(s) with UI for {} AI(s) using genetic algorithm...", () -> totalGames, () -> totalGames);
 
         GameCompositeWindow gameCompositeWindow = new GameCompositeWindow("Tetris (genetic AI)", gamesPerColumn, gamesPerRow);
-        AgentsMaster agentsMaster = new AgentsMaster();
+        GeneticAgentsMaster agentsMaster = new GeneticAgentsMaster();
 
         for (int k = 0; k < totalGames; k++) {
             int gameID = TetrisUtils.getNextAgentID();

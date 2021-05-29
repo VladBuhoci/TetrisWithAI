@@ -12,8 +12,8 @@ public abstract class Constants {
     //      Core game settings:
     //======================================================================
 
-    public static final int CELL_COUNT_HORIZONTALLY = 7;
-    public static final int CELL_COUNT_VERTICALLY = 14;
+    public static final int CELL_COUNT_HORIZONTALLY = 10;
+    public static final int CELL_COUNT_VERTICALLY = 20;
 
     public static final int LINES_REQUIRED_FOR_LEVEL_UP = 10;
 
@@ -32,6 +32,7 @@ public abstract class Constants {
     // Always keep the background and empty cells' colour values different!
     public static final Color BACKGROUND_COLOUR = Color.black;
     public static final Color EMPTY_CELL_COLOUR = Color.darkGray;
+    public static final Color BACKGROUND_COLOUR_LIGHT = Color.lightGray;
 
     public static final int  WINDOW_WIDTH = 260 + CELL_COUNT_HORIZONTALLY * CELL_SIZE * 10;
     public static final int WINDOW_HEIGHT = 160 +   CELL_COUNT_VERTICALLY * CELL_SIZE * 10;
@@ -52,4 +53,7 @@ public abstract class Constants {
 
     // The higher the value (percentage), the higher the chance for a gene of a child agent to mutate.
     public static final float AI_GENES_MUTATION_RATE = 10.0f;
+
+    // Games are forcefully ended after the timeout.
+    public static final int AI_GAME_TIME_LIMIT_SECONDS = 10;
 }

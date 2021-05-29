@@ -3,13 +3,15 @@ package edu.vbu.tetris_with_ai.ai;
 import edu.vbu.tetris_with_ai.core.Action;
 import edu.vbu.tetris_with_ai.core.TetrisGame;
 import edu.vbu.tetris_with_ai.utils.Constants;
+import edu.vbu.tetris_with_ai.utils.VoidFunctionOneArg;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
-public final class AgentsMaster {
+public class AgentsMaster {
 
     private static final Logger LOG = LogManager.getLogger(AgentsMaster.class);
 
@@ -17,6 +19,9 @@ public final class AgentsMaster {
 
     private boolean isRunning;
     private Thread masterThread;
+    private Thread gameTimeoutThread;
+
+    private VoidFunctionOneArg<Map<TetrisGame, Agent>> allGamesOverCallback;
 
     public AgentsMaster() {
         gamesAndAgents = new HashMap<>(10);
@@ -26,7 +31,7 @@ public final class AgentsMaster {
     /**
      * @param tetrisGame
      * @param newAgent   new agent to add to the collection.
-     * @throws IllegalStateException if this master instance is already running.
+     * @throws IllegalStateException if this master instance is already running (and some games are not over yet).
      */
     public void addAgent(TetrisGame tetrisGame, Agent newAgent) throws IllegalStateException {
         if (isRunning) {
@@ -37,7 +42,7 @@ public final class AgentsMaster {
     }
 
     /**
-     * @throws IllegalStateException if this master instance is already running.
+     * @throws IllegalStateException if this master instance is already running (and some games are not over yet).
      */
     public void start() throws IllegalStateException {
         if (isRunning) {
@@ -52,8 +57,8 @@ public final class AgentsMaster {
                     Action nextAction = agent.getNextAction(game);
                     game.performAction(nextAction);
                 } else {
-                    LOG.info("Agent [{}] has finished its game, removing it from master's pool..", agent::getName);
-                    gamesAndAgents.remove(game);
+                    LOG.info("Agent [{}] has finished its game", agent::getName);
+//                    gamesAndAgents.remove(game);
                     break;
                 }
 
@@ -61,16 +66,25 @@ public final class AgentsMaster {
                     game.gameLoopSingleCycle();
                 } catch (Exception e) {
                     LOG.error("An error occurred during an agent game's loop cycle", e);
-                    game.endGame(true);
-                    gamesAndAgents.remove(game);
+                    game.endGame(TetrisGame.EndGameReason.ERROR);
+//                    gamesAndAgents.remove(game);
                     break;
                 }
 
+                checkAreAllGamesOver();
                 waitForMillis(Constants.AI_WAIT_TIME_MILLIS_BEFORE_NEXT_MOVE);
             }
         }).start()));
 
         masterThread.start();
+
+        gameTimeoutThread = new Thread(() -> {
+            waitForMillis(TimeUnit.SECONDS.toMillis(Constants.AI_GAME_TIME_LIMIT_SECONDS));
+            forceAllGamesOver();
+            checkAreAllGamesOver();
+        });
+
+        gameTimeoutThread.start();
     }
 
     /**
@@ -90,14 +104,44 @@ public final class AgentsMaster {
         }
     }
 
-    private void waitForMillis(long millis) {
+    protected void setAllGamesOverCallback(VoidFunctionOneArg<Map<TetrisGame, Agent>> allGamesOverCallback) {
+        this.allGamesOverCallback = allGamesOverCallback;
+    }
+
+    protected void resetGame(TetrisGame game, String newGameLabel) {
+        game.reset(newGameLabel);
+    }
+
+    protected void forceAllGamesOver() {
+        gamesAndAgents.keySet().stream().filter(game -> !game.isGameOver()).forEach(game -> game.endGame(TetrisGame.EndGameReason.FORCED_BY_TIMEOUT));
+    }
+
+    private synchronized void checkAreAllGamesOver() {
+        if (areAllGamesOver()) {
+            if (isRunning) {
+                isRunning = false;
+
+                gameTimeoutThread.interrupt();
+
+                if (allGamesOverCallback != null) {
+                    allGamesOverCallback.call(gamesAndAgents);
+                }
+            }
+        }
+    }
+
+    private boolean areAllGamesOver() {
+        return gamesAndAgents.isEmpty() || gamesAndAgents.keySet().stream().allMatch(TetrisGame::isGameOver);
+    }
+
+    protected void waitForMillis(long millis) {
         try {
             Thread.sleep(millis);
         } catch (InterruptedException e) {
             if (e.getMessage().equalsIgnoreCase("sleep interrupted")) {
                 // Do nothing, thread was interrupted on purpose (agents master stopped by user).
             } else {
-                LOG.warn("An error occurred while trying to wait before having the agents execute a move again: {}", () -> e);
+                LOG.warn("An error occurred while trying to wait: {}", () -> e);
             }
         }
     }
