@@ -25,6 +25,8 @@ public final class TetrisGame {
 
     private static final Logger LOG = LogManager.getLogger(TetrisGame.class);
 
+    private final int id;
+
     private long initialDelay;
 
     private GameGrid gameGrid;
@@ -43,6 +45,11 @@ public final class TetrisGame {
     private int clearedLinesCount;
 
     public TetrisGame() {
+        this(0);
+    }
+
+    public TetrisGame(int id) {
+        this.id = id;
         this.gameGrid = initGameGrid();
     }
 
@@ -184,11 +191,19 @@ public final class TetrisGame {
         this.gameGrid = gameGrid;
     }
 
+    public int getId() {
+        return id;
+    }
+
     public void setPairedViewport(GameViewport gameViewport) {
         this.pairedViewport = gameViewport;
     }
 
     public void performAction(Action action) {
+        if (action == null) {
+            return;
+        }
+
         LOG.debug("Performing the following action upon current Tetris game and shape [{}] : {}", gameGrid::getCurrFallPiece, () -> action);
 
         switch (action) {

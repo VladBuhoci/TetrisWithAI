@@ -33,18 +33,12 @@ public class GeneticAgentsMaster extends AgentsMaster {
     private void handleNewGeneration(Map<TetrisGame, Agent> gamesAndAgents) {
         // Have the agents sorted in a list according to their corresponding game score (from highest to lowest).
 
-//        SortedMap<TetrisGame, Agent> sortedGamesAndAgents = new TreeMap<>((game1, game2) -> Integer.compare(game2.getScore(), game1.getScore()));
-//        LinkedHashMap<TetrisGame, Agent> sortedGamesAndAgents = new LinkedHashMap<>(gamesAndAgents.size());
-
         Set<TetrisGame> games = gamesAndAgents.keySet();
         List<TetrisGame> sortedGames = games.stream().sorted((game1, game2) -> Integer.compare(game2.getScore(), game1.getScore())).collect(Collectors.toList());
 
         List<GeneticAlgoAgent> sortedAgents = new ArrayList<>(games.size());
 
         sortedGames.forEach(game -> sortedAgents.add((GeneticAlgoAgent) gamesAndAgents.get(game)));
-
-//        Collection<Agent> agents = gamesAndAgents.values();
-//        Collection<GeneticAlgoAgent> geneticAgents = agents.stream().map(agent -> (GeneticAlgoAgent) agent).collect(Collectors.toCollection(ArrayList::new));
 
         Iterator<TetrisGame> gameIterator = sortedGames.iterator();
         TetrisGame topGame = gameIterator.next();
@@ -88,7 +82,7 @@ public class GeneticAgentsMaster extends AgentsMaster {
         }
 
         // Keep the first agent (top one) for the next generation.
-        GeneticAlgoAgent topAgent = (GeneticAlgoAgent) gamesAndAgents.get(previousTopGame);// sortedAgents.iterator().next();
+        GeneticAlgoAgent topAgent = (GeneticAlgoAgent) gamesAndAgents.get(previousTopGame);
         addAgent(topGame, topAgent);
         resetGame(topGame, "Tetris for random AI #" + topAgent.getId());
 

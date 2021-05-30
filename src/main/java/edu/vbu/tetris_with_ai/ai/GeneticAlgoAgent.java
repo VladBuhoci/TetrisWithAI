@@ -164,10 +164,11 @@ public class GeneticAlgoAgent extends Agent {
                 if (gameGrid.getPanelAtPosition(rowIndex, columnIndex).getBackground() == Constants.EMPTY_CELL_COLOUR) {
                     heights[columnIndex] -= 1;
                 } else {
-                    heights[columnIndex] += gameGrid.getColumnCount();
                     break;
                 }
             }
+
+            heights[columnIndex] += gameGrid.getRowCount();
         }
 
         return heights;

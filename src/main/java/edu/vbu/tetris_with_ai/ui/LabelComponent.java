@@ -13,7 +13,7 @@ public class LabelComponent extends JPanel {
 
         this.label = new JLabel(label);
         this.label.setForeground(Color.lightGray);
-        this.label.setFont(new Font(this.label.getFont().getName(), Font.PLAIN, 20));
+        this.label.setFont(new Font(this.label.getFont().getName(), Font.PLAIN, 14));
 
         add(this.label);
     }

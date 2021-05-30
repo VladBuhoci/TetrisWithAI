@@ -286,14 +286,6 @@ public class GameGrid extends JPanel {
     }
 
     private GameGrid duplicateCurrentGameGrid(Shape pieceToUse, int positionOnRow) {
-//        JPanel[][] gridClone = new JPanel[this.gridCells.length][this.gridCells[0].length];
-//
-//        for (int i = 0; i < this.gridCells.length; i++) {
-//            System.arraycopy(this.gridCells[i], 0, gridClone[i], 0, this.gridCells[i].length);
-//        }
-
-//        JPanel[][] gridClone = Arrays.stream(gridCells).map(JPanel[]::clone).toArray(JPanel[][]::new);
-
         JPanel[][] gridClone = new JPanel[this.gridCells.length][this.gridCells[0].length];
 
         for (int i = 0; i < this.gridCells.length; i++) {
@@ -307,6 +299,7 @@ public class GameGrid extends JPanel {
 
         GameGrid clone = new GameGrid(gridClone, this.columnCount, this.rowCount, this.isDoubleBuffered());
         clone.currFallPiece = pieceToUse;
+        clone.determineCellColoursForFallingPiece(EMPTY_CELL_COLOUR, true);
         clone.fallingPieceRowIndex = this.fallingPieceRowIndex;
         clone.fallingPieceColumnIndex = positionOnRow;
 
@@ -389,6 +382,10 @@ public class GameGrid extends JPanel {
         for (Position pos : occupiedCellPositions) {
             int currentPiecePosX = fallingPieceRowIndex + pos.getPosX();
             int currentPiecePosY = fallingPieceColumnIndex + pos.getPosY();
+
+            // Clamp indices
+            currentPiecePosX = MathUtils.clamp(currentPiecePosX, 0, rowCount - 1);
+            currentPiecePosY = MathUtils.clamp(currentPiecePosY, 0, columnCount - 1);
 
             if (currentPiecePosX < gridCells.length - 1
                     && gridCells[currentPiecePosX + 1][currentPiecePosY].getBackground() != EMPTY_CELL_COLOUR

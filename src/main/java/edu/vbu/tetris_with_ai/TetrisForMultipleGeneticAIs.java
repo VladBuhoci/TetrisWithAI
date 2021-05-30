@@ -25,7 +25,7 @@ public class TetrisForMultipleGeneticAIs {
         for (int k = 0; k < totalGames; k++) {
             int gameID = TetrisUtils.getNextAgentID();
 
-            TetrisGame tetrisGame = new TetrisGame();
+            TetrisGame tetrisGame = new TetrisGame(gameID);
             tetrisGame.startGame(Constants.GAME_START_INITIAL_DELAY, false);
 
             GameViewport gameViewport = new GameViewport("Tetris for genetic AI #" + gameID, tetrisGame, false);
