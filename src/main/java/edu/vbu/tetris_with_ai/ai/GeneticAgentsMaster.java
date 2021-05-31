@@ -13,7 +13,7 @@ public class GeneticAgentsMaster extends AgentsMaster {
     private static final Logger LOG = LogManager.getLogger(GeneticAlgoAgent.class);
 
     private int currentGeneration;
-    private int bestScore;          // across generations.
+    private double bestScore;          // across generations.
 
     private TetrisGame previousTopGame;
 
@@ -34,7 +34,7 @@ public class GeneticAgentsMaster extends AgentsMaster {
         // Have the agents sorted in a list according to their corresponding game score (from highest to lowest).
 
         Set<TetrisGame> games = gamesAndAgents.keySet();
-        List<TetrisGame> sortedGames = games.stream().sorted((game1, game2) -> Integer.compare(game2.getScore(), game1.getScore())).collect(Collectors.toList());
+        List<TetrisGame> sortedGames = games.stream().sorted((game1, game2) -> Double.compare(game2.getScore(), game1.getScore())).collect(Collectors.toList());
 
         List<GeneticAlgoAgent> sortedAgents = new ArrayList<>(games.size());
 
@@ -55,6 +55,8 @@ public class GeneticAgentsMaster extends AgentsMaster {
                 previousTopGame = topGame;
             }
         }
+
+        topGame = previousTopGame;  // they're identical now.
 
         // Update generation data.
 
@@ -82,7 +84,7 @@ public class GeneticAgentsMaster extends AgentsMaster {
         }
 
         // Keep the first agent (top one) for the next generation.
-        GeneticAlgoAgent topAgent = (GeneticAlgoAgent) gamesAndAgents.get(previousTopGame);
+        GeneticAlgoAgent topAgent = (GeneticAlgoAgent) gamesAndAgents.get(topGame);
         addAgent(topGame, topAgent);
         resetGame(topGame, "Tetris for random AI #" + topAgent.getId());
 
@@ -94,11 +96,15 @@ public class GeneticAgentsMaster extends AgentsMaster {
             GeneticAlgoAgent agent2 = randomAgentPairFromPopulation.getValue();
 
             TetrisGame nextGame = gameIterator.next();
-            GeneticAlgoAgent childAgent = agent1.crossOver(agent2);
+            GeneticAlgoAgent childAgent = agent1.crossOver(agent2, getGameByAgent(gamesAndAgents, agent1), getGameByAgent(gamesAndAgents, agent2));
 
             resetGame(nextGame, "Tetris for random AI #" + childAgent.getId());
             addAgent(nextGame, childAgent);
         }
+    }
+
+    private TetrisGame getGameByAgent(Map<TetrisGame, Agent> games, GeneticAlgoAgent agentFilter) {
+        return games.keySet().stream().filter(tetrisGame -> games.get(tetrisGame) == agentFilter).findFirst().orElse(null);
     }
 
     private Pair<GeneticAlgoAgent, GeneticAlgoAgent> getRandomAgentPairFromPopulation(Collection<GeneticAlgoAgent> agents) {
@@ -110,5 +116,9 @@ public class GeneticAgentsMaster extends AgentsMaster {
         List<GeneticAlgoAgent> pair = elementsToRandomlyPickCount > copy.size() ? copy.subList(0, copy.size()) : copy.subList(0, elementsToRandomlyPickCount);
 
         return new Pair<>(pair.get(0), pair.get(1));
+    }
+
+    public double getBestScore() {
+        return bestScore;
     }
 }

@@ -110,40 +110,53 @@ public class GeneticAlgoAgent extends Agent {
      * @param otherParent the other "parent" agent.
      * @return the "child" agent.
      */
-    public GeneticAlgoAgent crossOver(GeneticAlgoAgent otherParent) {
+    public GeneticAlgoAgent crossOver(GeneticAlgoAgent otherParent, TetrisGame agent1Game, TetrisGame agent2Game) {
         GeneticAlgoAgent child = new GeneticAlgoAgent(TetrisUtils.getNextAgentID());
 
         // Choose the weights for the child, from this agent or the other one, randomly.
-        child.weightForHeight = RANDOM.nextBoolean() ? this.weightForHeight : otherParent.weightForHeight;
-        child.weightForHoles = RANDOM.nextBoolean() ? this.weightForHoles : otherParent.weightForHoles;
-        child.weightForBumpiness = RANDOM.nextBoolean() ? this.weightForBumpiness : otherParent.weightForBumpiness;
-        child.weightForLineClear = RANDOM.nextBoolean() ? this.weightForLineClear : otherParent.weightForLineClear;
+//        child.weightForHeight = RANDOM.nextBoolean() ? this.weightForHeight : otherParent.weightForHeight;
+//        child.weightForHoles = RANDOM.nextBoolean() ? this.weightForHoles : otherParent.weightForHoles;
+//        child.weightForBumpiness = RANDOM.nextBoolean() ? this.weightForBumpiness : otherParent.weightForBumpiness;
+//        child.weightForLineClear = RANDOM.nextBoolean() ? this.weightForLineClear : otherParent.weightForLineClear;
+
+//        double scoreRatio = (double) agent1Game.getScore() / agent2Game.getScore();
+
+        {
+//            double weightRatio = child.weightForHeight / otherParent.weightForHeight;
+
+            // 4 : 1 --> 3 & 1
+
+            child.weightForHeight = (this.weightForHeight + otherParent.weightForHeight) / 2.0;
+        }
+        {
+            child.weightForHoles = (this.weightForHoles + otherParent.weightForHoles) / 2.0;
+        }
+        {
+            child.weightForBumpiness = (this.weightForBumpiness + otherParent.weightForBumpiness) / 2.0;
+        }
+        {
+            child.weightForLineClear = (this.weightForLineClear + otherParent.weightForLineClear) / 2.0;
+        }
 
         // Mutate the weights of the child, randomly.
         if (RANDOM.nextDouble() < Constants.AI_GENES_MUTATION_RATE) {
             double factor = RANDOM.nextBoolean() ? 1 : -1;
-
             child.weightForHeight += getRandomWeight() / 2.0 * factor;
-            child.weightForHeight = MathUtils.clamp(child.weightForHeight, -1.0, 1.0);
         }
         if (RANDOM.nextDouble() < Constants.AI_GENES_MUTATION_RATE) {
             double factor = RANDOM.nextBoolean() ? 1 : -1;
-
             child.weightForHoles += getRandomWeight() / 2.0 * factor;
-            child.weightForHeight = MathUtils.clamp(child.weightForHeight, -1.0, 1.0);
         }
         if (RANDOM.nextDouble() < Constants.AI_GENES_MUTATION_RATE) {
             double factor = RANDOM.nextBoolean() ? 1 : -1;
-
             child.weightForBumpiness += getRandomWeight() / 2.0 * factor;
-            child.weightForHeight = MathUtils.clamp(child.weightForHeight, -1.0, 1.0);
         }
         if (RANDOM.nextDouble() < Constants.AI_GENES_MUTATION_RATE) {
             double factor = RANDOM.nextBoolean() ? 1 : -1;
-
             child.weightForLineClear += getRandomWeight() / 2.0 * factor;
-            child.weightForHeight = MathUtils.clamp(child.weightForHeight, -1.0, 1.0);
         }
+
+        child.clampWeights();
 
         return child;
     }
@@ -216,5 +229,28 @@ public class GeneticAlgoAgent extends Agent {
 
     private double getRandomWeight() {
         return RANDOM.nextDouble() * 2.0f - 1.0f;    // map [0, 1] to [-1, 1]
+    }
+
+    private void clampWeights() {
+        weightForHeight = MathUtils.clamp(weightForHeight, -1.0, 1.0);
+        weightForHoles = MathUtils.clamp(weightForHoles, -1.0, 1.0);
+        weightForBumpiness = MathUtils.clamp(weightForBumpiness, -1.0, 1.0);
+        weightForLineClear = MathUtils.clamp(weightForLineClear, -1.0, 1.0);
+    }
+
+    public double getWeightForHeight() {
+        return weightForHeight;
+    }
+
+    public double getWeightForHoles() {
+        return weightForHoles;
+    }
+
+    public double getWeightForBumpiness() {
+        return weightForBumpiness;
+    }
+
+    public double getWeightForLineClear() {
+        return weightForLineClear;
     }
 }

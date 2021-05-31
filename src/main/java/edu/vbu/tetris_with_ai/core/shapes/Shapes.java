@@ -12,6 +12,8 @@ public abstract class Shapes {
     private static final Class<? extends Shape>[] ALL_SHAPES = new Class[] { LForm.class, LFormMirror.class, Line.class, Square.class, TForm.class, Zigzag.class, ZigzagMirror.class };
     private static final Random RANDOM = new Random(System.currentTimeMillis());
 
+    private static final Null nullPiece = new Null();
+
     private Shapes() {
         // nothing
     }
@@ -39,5 +41,9 @@ public abstract class Shapes {
         }
 
         return null;
+    }
+
+    public static Null getNullPiece() {
+        return nullPiece;
     }
 }

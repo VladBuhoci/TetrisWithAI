@@ -12,12 +12,14 @@ public abstract class Constants {
     //      Core game settings:
     //======================================================================
 
-    public static final int CELL_COUNT_HORIZONTALLY = 10;
-    public static final int CELL_COUNT_VERTICALLY = 20;
+    public static final int CELL_COUNT_HORIZONTALLY = 14;
+    public static final int CELL_COUNT_VERTICALLY = 28;
 
     public static final int LINES_REQUIRED_FOR_LEVEL_UP = 10;
 
     public static final long GAME_START_INITIAL_DELAY = 300L;
+
+    public static final double SCORE_PER_PIECE_DOWN_MOVE = 0.01;
 
     //======================================================================
     //      UI settings:
@@ -34,8 +36,8 @@ public abstract class Constants {
     public static final Color EMPTY_CELL_COLOUR = Color.darkGray;
     public static final Color BACKGROUND_COLOUR_LIGHT = Color.lightGray;
 
-    public static final int  WINDOW_WIDTH = 220 + CELL_COUNT_HORIZONTALLY * CELL_SIZE * 10;
-    public static final int WINDOW_HEIGHT = 100 +   CELL_COUNT_VERTICALLY * CELL_SIZE * 10;
+    public static final int  WINDOW_WIDTH = 260 + CELL_COUNT_HORIZONTALLY * CELL_SIZE;
+    public static final int WINDOW_HEIGHT = 180 +   CELL_COUNT_VERTICALLY * CELL_SIZE;
 
     // How much of the total window height should be allocated for each empty area (up and bottom).
     public static final double TOP_FILLER_SPACE_HEIGHT_PERCENTAGE = 0.1;
@@ -49,11 +51,11 @@ public abstract class Constants {
     //      AI settings:
     //======================================================================
 
-    public static final long AI_WAIT_TIME_MILLIS_BEFORE_NEXT_MOVE = 10L;
+    public static final long AI_WAIT_TIME_MILLIS_BEFORE_NEXT_MOVE = 5L;
 
     // The higher the value (percentage), the higher the chance for a gene of a child agent to mutate.
     public static final float AI_GENES_MUTATION_RATE = 10.0f;
 
     // Games are forcefully ended after the timeout.
-    public static final int AI_GAME_TIME_LIMIT_SECONDS = 10;
+    public static final int AI_GAME_TIME_LIMIT_SECONDS = 120;
 }

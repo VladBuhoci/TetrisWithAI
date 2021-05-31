@@ -80,6 +80,7 @@ public class AgentsMaster {
                         }
                     } else {
                         LOG.info("Agent [{}] has finished its game", agent::getName);
+                        stopSpecificAgent(Thread.currentThread());
                     }
 
                     if (checkAreAllGamesOver()) {
@@ -120,7 +121,7 @@ public class AgentsMaster {
             agentThreads.forEach(Thread::interrupt);
             agentThreads.clear();
 
-            agentsAndRunFlags.forEach((thread, runFlag) -> runFlag.compareAndSet(true, false));
+            agentsAndRunFlags.forEach((thread, runFlag) -> stopSpecificAgent(thread));
             agentsAndRunFlags.clear();
 
             masterThread.interrupt();
@@ -138,6 +139,10 @@ public class AgentsMaster {
 
     protected void forceAllGamesOver() {
         gamesAndAgents.keySet().stream().filter(game -> !game.isGameOver()).forEach(game -> game.endGame(TetrisGame.EndGameReason.FORCED_BY_TIMEOUT));
+    }
+
+    private void stopSpecificAgent(Thread agentThread) {
+        agentsAndRunFlags.get(agentThread).compareAndSet(true, false);
     }
 
     private synchronized boolean checkAreAllGamesOver() {
@@ -170,5 +175,9 @@ public class AgentsMaster {
                 LOG.warn("An error occurred while trying to wait: {}", () -> e);
             }
         }
+    }
+
+    public Map<TetrisGame, Agent> getGamesAndAgents() {
+        return gamesAndAgents;
     }
 }

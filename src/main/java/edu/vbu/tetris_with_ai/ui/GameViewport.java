@@ -175,7 +175,7 @@ public class GameViewport extends JPanel {
         return bottomFillerPanel;
     }
 
-    private void updateLevelAndScoreLabel(int level, int score) {
+    private void updateLevelAndScoreLabel(int level, double score) {
         ((ScoreComponent) gameStats.getComponent(0)).setLevelAndScore(level, score);
     }
 

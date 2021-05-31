@@ -34,13 +34,13 @@ public final class TetrisGame {
 
     private VoidFunctionNoArg onGameOverCallback;
     private VoidFunctionOneArg<String> onSpawnPieceCallback;
-    private VoidFunctionTwoArgs<Integer, Integer> onScoreIncreasedCallback;
+    private VoidFunctionTwoArgs<Integer, Double> onScoreIncreasedCallback;
 
     private Shape upcomingPiece;
     private boolean isGameSessionRunning;
     private Thread pieceDescendingThread;
     private double pieceMoveDownTimesPerSecond;
-    private int score;
+    private double score;
     private int level;
     private int clearedLinesCount;
 
@@ -137,7 +137,7 @@ public final class TetrisGame {
             int clearedRows = gameGrid.tryClearCompletedHorizLines();
             if (clearedRows > 0) {
                 // If there were any completed (and cleared by now) horizontal lines, raise the score accordingly.
-                increaseScore(clearedRows);
+                increaseScoreByCompletedLines(clearedRows);
             }
 
             try {
@@ -175,7 +175,7 @@ public final class TetrisGame {
         this.onSpawnPieceCallback = onSpawnPieceCallback;
     }
 
-    public void setOnScoreIncreasedCallback(VoidFunctionTwoArgs<Integer, Integer> onScoreIncreasedCallback) {
+    public void setOnScoreIncreasedCallback(VoidFunctionTwoArgs<Integer, Double> onScoreIncreasedCallback) {
         this.onScoreIncreasedCallback = onScoreIncreasedCallback;
     }
 
@@ -183,7 +183,7 @@ public final class TetrisGame {
         return gameGrid;
     }
 
-    public int getScore() {
+    public double getScore() {
         return score;
     }
 
@@ -234,7 +234,9 @@ public final class TetrisGame {
     // Begin delegates.
 
     public void movePieceDownOneRow() {
-        gameGrid.movePieceDownOneRow();
+        boolean movedOneRow = gameGrid.movePieceDownOneRow();
+
+        increaseScore(movedOneRow ? Constants.SCORE_PER_PIECE_DOWN_MOVE : 0.0);
     }
 
     public void movePieceLeftOneColumn() {
@@ -254,7 +256,9 @@ public final class TetrisGame {
     }
 
     public void instantDropPiece() {
-        gameGrid.instantDropPiece();
+        int moveCount = gameGrid.instantDropPiece();
+
+        increaseScore(moveCount * Constants.SCORE_PER_PIECE_DOWN_MOVE);
     }
 
     // ~ end of delegates.
@@ -288,27 +292,40 @@ public final class TetrisGame {
         return chosenShape;
     }
 
-    private void increaseScore(int clearedLines) {
-        int deltaScore = 0;
+    private void increaseScore(double deltaScore) {
+        increaseScore0(deltaScore);
+    }
+
+    private void increaseScoreByCompletedLines(int clearedLines) {
+        double deltaScore = 0.0;
 
         clearedLinesCount += clearedLines;
         level = clearedLinesCount / Constants.LINES_REQUIRED_FOR_LEVEL_UP;
 
         switch (clearedLines) {
             case 1:
-                deltaScore = 40 * (level + 1);
+                deltaScore = 40.0 * (level + 1);
                 break;
             case 2:
-                deltaScore = 100 * (level + 1);
+                deltaScore = 100.0 * (level + 1);
                 break;
             case 3:
-                deltaScore = 300 * (level + 1);
+                deltaScore = 300.0 * (level + 1);
                 break;
             case 4:
-                deltaScore = 1200 * (level + 1);
+                deltaScore = 1_200.0 * (level + 1);
                 break;
         }
 
+        increaseScore0(deltaScore);
+    }
+
+    /**
+     * Don't call this directly.
+     *
+     * @param deltaScore points to add to the game's score.
+     */
+    private void increaseScore0(double deltaScore) {
         score += deltaScore;
 
         Optional.ofNullable(onScoreIncreasedCallback).ifPresent(callback -> callback.call(level, score));

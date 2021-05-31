@@ -3,6 +3,7 @@ package edu.vbu.tetris_with_ai.ui;
 import com.sun.istack.internal.Nullable;
 import edu.vbu.tetris_with_ai.core.Position;
 import edu.vbu.tetris_with_ai.core.shapes.Shape;
+import edu.vbu.tetris_with_ai.core.shapes.Shapes;
 import edu.vbu.tetris_with_ai.utils.MathUtils;
 import edu.vbu.tetris_with_ai.utils.VoidFunctionNoArg;
 import org.apache.logging.log4j.LogManager;
@@ -12,7 +13,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.Semaphore;
 
 import static edu.vbu.tetris_with_ai.utils.Constants.BACKGROUND_COLOUR;
 import static edu.vbu.tetris_with_ai.utils.Constants.EMPTY_CELL_COLOUR;
@@ -178,10 +178,14 @@ public class GameGrid extends JPanel {
         rotatePieceOnceInternal(() -> currFallPiece.rotateRight(), () -> currFallPiece.rotateLeft());
     }
 
-    public void instantDropPiece() {
-        while (movePieceDownOneRow()) {
+    public int instantDropPiece() {
+        int moveCount = 0;
 
+        while (movePieceDownOneRow()) {
+            moveCount++;
         }
+
+        return moveCount;
     }
 
     public boolean isPieceCollidingBottom() {
@@ -247,6 +251,9 @@ public class GameGrid extends JPanel {
         if (completedLines == 0) {
             return 0;
         }
+
+        // Force the current piece to get blended with the other still pieces, so it's guaranteed that it can also be erased if sitting on a completed line.
+        setCurrentFallingPiece(Shapes.getNullPiece());
 
         // Fill the now-empty cells with the cells above.
         int lookupDelta = 1;    // how many rows to look above to pull cell row down to current index (to avoid dragging down black rows).

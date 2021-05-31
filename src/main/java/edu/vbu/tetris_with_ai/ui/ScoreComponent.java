@@ -2,6 +2,7 @@ package edu.vbu.tetris_with_ai.ui;
 
 import javax.swing.*;
 import java.awt.*;
+import java.text.MessageFormat;
 
 public class ScoreComponent extends JPanel {
 
@@ -59,8 +60,8 @@ public class ScoreComponent extends JPanel {
         add(verticalPanel);
     }
 
-    public void setLevelAndScore(int level, int score) {
+    public void setLevelAndScore(int level, double score) {
         levelValue.setText(String.valueOf(level));
-        scoreValue.setText(String.valueOf(score));
+        scoreValue.setText(String.format("%.2f", score));
     }
 }
