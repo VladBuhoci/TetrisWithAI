@@ -7,6 +7,8 @@ import edu.vbu.tetris_with_ai.ui.GameGrid;
 import edu.vbu.tetris_with_ai.utils.Constants;
 import edu.vbu.tetris_with_ai.utils.MathUtils;
 import edu.vbu.tetris_with_ai.utils.TetrisUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.swing.*;
 import java.util.Arrays;
@@ -19,18 +21,33 @@ import java.util.Queue;
  */
 public class GeneticAlgoAgent extends Agent {
 
+    private static final Logger LOG = LogManager.getLogger(GeneticAlgoAgent.class);
+
     private double weightForHeight;
     private double weightForHoles;
     private double weightForBumpiness;
     private double weightForLineClear;
 
     public GeneticAlgoAgent(long id) {
+        this(id, true);
+    }
+
+    private GeneticAlgoAgent(long id, boolean logGeneratedWeights) {
         super(id);
 
-        weightForHeight = getRandomWeight();
-        weightForHoles = getRandomWeight();
-        weightForBumpiness = getRandomWeight();
-        weightForLineClear = getRandomWeight();
+//        weightForHeight = getRandomWeight();
+//        weightForHoles = getRandomWeight();
+//        weightForBumpiness = getRandomWeight();
+//        weightForLineClear = getRandomWeight();
+
+        weightForHeight    = -0.10531331367607177;
+        weightForHoles     = -0.16308920919262127;
+        weightForBumpiness = +0.46243821049196820;
+        weightForLineClear = -0.07588886641364434;
+
+        if (logGeneratedWeights) {
+            logWeights();
+        }
     }
 
     @Override
@@ -111,7 +128,7 @@ public class GeneticAlgoAgent extends Agent {
      * @return the "child" agent.
      */
     public GeneticAlgoAgent crossOver(GeneticAlgoAgent otherParent, TetrisGame agent1Game, TetrisGame agent2Game) {
-        GeneticAlgoAgent child = new GeneticAlgoAgent(TetrisUtils.getNextAgentID());
+        GeneticAlgoAgent child = new GeneticAlgoAgent(TetrisUtils.getNextAgentID(), false);
 
         // Choose the weights for the child, from this agent or the other one, randomly.
 //        child.weightForHeight = RANDOM.nextBoolean() ? this.weightForHeight : otherParent.weightForHeight;
@@ -157,6 +174,7 @@ public class GeneticAlgoAgent extends Agent {
         }
 
         child.clampWeights();
+        child.logWeights();
 
         return child;
     }
@@ -236,6 +254,11 @@ public class GeneticAlgoAgent extends Agent {
         weightForHoles = MathUtils.clamp(weightForHoles, -1.0, 1.0);
         weightForBumpiness = MathUtils.clamp(weightForBumpiness, -1.0, 1.0);
         weightForLineClear = MathUtils.clamp(weightForLineClear, -1.0, 1.0);
+    }
+
+    private void logWeights() {
+        LOG.debug("Weights of agent [id = {}] for: height = {} | holes = {} | bumpiness = {} | lines = {}"
+                , this::getId, () -> weightForHeight, () -> weightForHoles, () -> weightForBumpiness, () -> weightForLineClear);
     }
 
     public double getWeightForHeight() {

@@ -12,6 +12,10 @@
             <AppenderRef ref="Console"/>
         </Logger>
 
+        <Logger name="edu.vbu.tetris_with_ai.ai.GeneticAlgoAgent" level="DEBUG" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+
         <Root level="WARN">
             <AppenderRef ref="Console"/>
         </Root>

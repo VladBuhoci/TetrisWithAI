@@ -5,10 +5,12 @@ import edu.vbu.tetris_with_ai.ai.GeneticAgentsMaster;
 import edu.vbu.tetris_with_ai.ai.GeneticAlgoAgent;
 import edu.vbu.tetris_with_ai.core.TetrisGame;
 import edu.vbu.tetris_with_ai.utils.Constants;
+import edu.vbu.tetris_with_ai.utils.TetrisUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -30,6 +32,8 @@ public class GameStatsWindow extends JFrame {
     private JLabel holesWeightValue;
     private JLabel bumpWeightValue;
     private JLabel linesWeightValue;
+    private JLabel overallTimeValue;
+    private JLabel generationValue;
 
     public GameStatsWindow(String windowTitle, GeneticAgentsMaster geneticAgentsMaster) {
         super(windowTitle);
@@ -38,7 +42,7 @@ public class GameStatsWindow extends JFrame {
         this.gamesAndAgents = geneticAgentsMaster.getGamesAndAgents();
         this.executorService = Executors.newSingleThreadScheduledExecutor();
 
-        setSize(400, 600);
+        setSize(300, 400);
         setResizable(false);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
@@ -97,9 +101,32 @@ public class GameStatsWindow extends JFrame {
         currentWeightsGrid.add(linesWeightLabel);
         currentWeightsGrid.add(linesWeightValue);
 
+        JPanel currentWeightsGridRow = new JPanel();
+        currentWeightsGridRow.add(currentWeightsGrid);
+
+        // Current genetic AI generation
+
+        JLabel generationLabel = new JLabel("Current generation: ");
+        generationValue = new JLabel("0");
+
+        JPanel generationRow = new JPanel();
+        generationRow.add(generationLabel);
+        generationRow.add(generationValue);
+
+        // Overall time that passed since game started.
+
+        JLabel overallTimeLabel = new JLabel("Overall passed time: ");
+        overallTimeValue = new JLabel("0");
+
+        JPanel overallTimeRow = new JPanel();
+        overallTimeRow.add(overallTimeLabel);
+        overallTimeRow.add(overallTimeValue);
+
         add(overallScoreRow);
         add(currentScoreRow);
-        add(currentWeightsGrid);
+        add(currentWeightsGridRow);
+        add(generationRow);
+        add(overallTimeRow);
     }
 
     public void display() {
@@ -127,5 +154,27 @@ public class GameStatsWindow extends JFrame {
         holesWeightValue.setText(String.valueOf(currentTopAgent.getWeightForHoles()));
         bumpWeightValue.setText(String.valueOf(currentTopAgent.getWeightForBumpiness()));
         linesWeightValue.setText(String.valueOf(currentTopAgent.getWeightForLineClear()));
+
+        long elapsedNanos = TetrisUtils.getTimePassedSinceAppStart();
+        long elapsedMinutes = TimeUnit.NANOSECONDS.toMinutes(elapsedNanos);
+        long elapsedSeconds = TimeUnit.NANOSECONDS.toSeconds(elapsedNanos - TimeUnit.MINUTES.toNanos(elapsedMinutes));
+        long elapsedMillis = TimeUnit.NANOSECONDS.toMillis(elapsedNanos - TimeUnit.MINUTES.toNanos(elapsedMinutes) - TimeUnit.SECONDS.toNanos(elapsedSeconds));
+
+        generationValue.setText(String.valueOf(geneticAgentsMaster.getCurrentGeneration()));
+
+        StringBuilder elapsedTimeFormatted = new StringBuilder();
+        if (elapsedMinutes > 0L) {
+            elapsedTimeFormatted.append(MessageFormat.format("{0} min", elapsedMinutes));
+        }
+        if (elapsedSeconds > 0L) {
+            elapsedTimeFormatted.append(elapsedTimeFormatted.length() > 0 ? ", " : "");
+            elapsedTimeFormatted.append(MessageFormat.format("{0} sec", elapsedSeconds));
+        }
+        if (elapsedMillis > 0L) {
+            elapsedTimeFormatted.append(elapsedTimeFormatted.length() > 0 ? ", " : "");
+            elapsedTimeFormatted.append(MessageFormat.format("{0} millis", elapsedMillis));
+        }
+
+        overallTimeValue.setText(elapsedTimeFormatted.toString());
     }
 }

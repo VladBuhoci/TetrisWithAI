@@ -118,6 +118,10 @@ public class GeneticAgentsMaster extends AgentsMaster {
         return new Pair<>(pair.get(0), pair.get(1));
     }
 
+    public int getCurrentGeneration() {
+        return currentGeneration;
+    }
+
     public double getBestScore() {
         return bestScore;
     }
