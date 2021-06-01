@@ -1,1 +1,4 @@
 * Icon based on the tetris.png file that was downloaded from https://www.flaticon.com/free-icon/tetris_566312 (thanks to https://www.freepik.com/).
+* Algorithm design inspired by:
+    * https://github.com/OneMelon8/TetrisAI
+    * https://codemyroad.wordpress.com/2013/04/14/tetris-ai-the-near-perfect-player/

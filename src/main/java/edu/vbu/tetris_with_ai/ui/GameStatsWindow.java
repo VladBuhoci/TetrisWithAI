@@ -149,6 +149,8 @@ public class GameStatsWindow extends JFrame {
         TetrisGame currentTopGame = gamesAndAgents.keySet().stream().max(Comparator.comparingDouble(TetrisGame::getScore)).get();
         currentScoreValue.setText(String.format("%.2f", currentTopGame.getScore()));
 
+        geneticAgentsMaster.markTopGame(currentTopGame);
+
         GeneticAlgoAgent currentTopAgent = (GeneticAlgoAgent) gamesAndAgents.get(currentTopGame);
         heightWeightValue.setText(String.valueOf(currentTopAgent.getWeightForHeight()));
         holesWeightValue.setText(String.valueOf(currentTopAgent.getWeightForHoles()));
@@ -156,23 +158,28 @@ public class GameStatsWindow extends JFrame {
         linesWeightValue.setText(String.valueOf(currentTopAgent.getWeightForLineClear()));
 
         long elapsedNanos = TetrisUtils.getTimePassedSinceAppStart();
-        long elapsedMinutes = TimeUnit.NANOSECONDS.toMinutes(elapsedNanos);
-        long elapsedSeconds = TimeUnit.NANOSECONDS.toSeconds(elapsedNanos - TimeUnit.MINUTES.toNanos(elapsedMinutes));
-        long elapsedMillis = TimeUnit.NANOSECONDS.toMillis(elapsedNanos - TimeUnit.MINUTES.toNanos(elapsedMinutes) - TimeUnit.SECONDS.toNanos(elapsedSeconds));
+        long elapsedHours = TimeUnit.NANOSECONDS.toHours(elapsedNanos);
+        long elapsedMinutes = TimeUnit.NANOSECONDS.toMinutes(elapsedNanos - TimeUnit.HOURS.toNanos(elapsedHours));
+        long elapsedSeconds = TimeUnit.NANOSECONDS.toSeconds(elapsedNanos - TimeUnit.HOURS.toNanos(elapsedHours) - TimeUnit.MINUTES.toNanos(elapsedMinutes));
+        long elapsedMillis = TimeUnit.NANOSECONDS.toMillis(elapsedNanos - TimeUnit.HOURS.toNanos(elapsedHours) - TimeUnit.MINUTES.toNanos(elapsedMinutes) - TimeUnit.SECONDS.toNanos(elapsedSeconds));
 
         generationValue.setText(String.valueOf(geneticAgentsMaster.getCurrentGeneration()));
 
         StringBuilder elapsedTimeFormatted = new StringBuilder();
+        if (elapsedHours > 0L) {
+            elapsedTimeFormatted.append(MessageFormat.format("{0} h", elapsedHours));
+        }
         if (elapsedMinutes > 0L) {
-            elapsedTimeFormatted.append(MessageFormat.format("{0} min", elapsedMinutes));
+            elapsedTimeFormatted.append(elapsedTimeFormatted.length() > 0 ? ", " : "");
+            elapsedTimeFormatted.append(MessageFormat.format("{0} m", elapsedMinutes));
         }
         if (elapsedSeconds > 0L) {
             elapsedTimeFormatted.append(elapsedTimeFormatted.length() > 0 ? ", " : "");
-            elapsedTimeFormatted.append(MessageFormat.format("{0} sec", elapsedSeconds));
+            elapsedTimeFormatted.append(MessageFormat.format("{0} s", elapsedSeconds));
         }
         if (elapsedMillis > 0L) {
             elapsedTimeFormatted.append(elapsedTimeFormatted.length() > 0 ? ", " : "");
-            elapsedTimeFormatted.append(MessageFormat.format("{0} millis", elapsedMillis));
+            elapsedTimeFormatted.append(MessageFormat.format("{0} mi", elapsedMillis));
         }
 
         overallTimeValue.setText(elapsedTimeFormatted.toString());

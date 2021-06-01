@@ -43,18 +43,7 @@ public class GeneticAgentsMaster extends AgentsMaster {
         Iterator<TetrisGame> gameIterator = sortedGames.iterator();
         TetrisGame topGame = gameIterator.next();
 
-        if (previousTopGame == null) {
-            topGame.markAsTopGame(true);
-
-            previousTopGame = topGame;
-        } else {
-            if (previousTopGame != topGame && previousTopGame.getScore() < topGame.getScore()) {
-                topGame.markAsTopGame(true);
-
-                previousTopGame.markAsTopGame(false);
-                previousTopGame = topGame;
-            }
-        }
+        markTopGame(topGame);
 
         topGame = previousTopGame;  // they're identical now.
 
@@ -124,5 +113,20 @@ public class GeneticAgentsMaster extends AgentsMaster {
 
     public double getBestScore() {
         return bestScore;
+    }
+
+    public void markTopGame(TetrisGame newTopGame) {
+        if (previousTopGame == null) {
+            newTopGame.markAsTopGame(true);
+
+            previousTopGame = newTopGame;
+        } else {
+            if (previousTopGame != newTopGame && previousTopGame.getScore() < newTopGame.getScore()) {
+                newTopGame.markAsTopGame(true);
+
+                previousTopGame.markAsTopGame(false);
+                previousTopGame = newTopGame;
+            }
+        }
     }
 }

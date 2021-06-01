@@ -305,8 +305,9 @@ public class GameGrid extends JPanel {
         }
 
         GameGrid clone = new GameGrid(gridClone, this.columnCount, this.rowCount, this.isDoubleBuffered());
+        clone.currFallPiece = this.currFallPiece;
+        clone.determineCellColoursForFallingPiece(EMPTY_CELL_COLOUR, true);     // erase the initial falling piece in the cloned grid
         clone.currFallPiece = pieceToUse;
-        clone.determineCellColoursForFallingPiece(EMPTY_CELL_COLOUR, true);
         clone.fallingPieceRowIndex = this.fallingPieceRowIndex;
         clone.fallingPieceColumnIndex = positionOnRow;
 

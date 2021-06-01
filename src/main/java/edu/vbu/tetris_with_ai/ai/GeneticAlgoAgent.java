@@ -35,15 +35,25 @@ public class GeneticAlgoAgent extends Agent {
     private GeneticAlgoAgent(long id, boolean logGeneratedWeights) {
         super(id);
 
-//        weightForHeight = getRandomWeight();
-//        weightForHoles = getRandomWeight();
-//        weightForBumpiness = getRandomWeight();
-//        weightForLineClear = getRandomWeight();
+        weightForHeight = getRandomWeight();
+        weightForHoles = getRandomWeight();
+        weightForBumpiness = getRandomWeight();
+        weightForLineClear = getRandomWeight();
 
-        weightForHeight    = -0.10531331367607177;
-        weightForHoles     = -0.16308920919262127;
-        weightForBumpiness = +0.46243821049196820;
-        weightForLineClear = -0.07588886641364434;
+//        weightForHeight    = 0.10531331367607177;
+//        weightForHoles     = 0.16308920919262127;
+//        weightForBumpiness = 0.46243821049196820;
+//        weightForLineClear = 0.07588886641364434;
+
+//        weightForHeight = 1;
+//        weightForHoles = 1;
+//        weightForBumpiness = 1;
+//        weightForLineClear = 1;
+
+        weightForHeight = 0.15815871538732607;
+        weightForHoles = 0.6215055316235667;
+        weightForBumpiness = 0.6051368694870694;
+        weightForLineClear = 0.44280394714305427;
 
         if (logGeneratedWeights) {
             logWeights();
@@ -54,7 +64,7 @@ public class GeneticAlgoAgent extends Agent {
     protected void determineActions(Queue<Action> actionQueueToFill, int actionAmount, TetrisGame game) {
         // Fill action queue based on the agent's prediction.
 
-        double bestFitness = Double.MIN_VALUE;
+        double bestFitness = -999999999.0;
         int bestRotationCount = -1;             // determines how many rotations (clockwise) need to be applied to the piece.
         int bestPositionOnRow = -1;             // determines how many moves to the left or to the right need to be applied to the piece.
 
@@ -70,22 +80,24 @@ public class GeneticAlgoAgent extends Agent {
             int emptyCellsInPieceSchemaOffset = pieceClone.getHorizontalEmptyCellsOffset();
 
             for (int positionX = 0; positionX < possibleSlotsToOccupyOnRow; positionX++) {
-                GameGrid futureGrid = gameGrid.getFutureGridWithCurrentPieceInFinalPosition(pieceClone, positionX - emptyCellsInPieceSchemaOffset);
-                double fitness = getFitness(futureGrid);
+                int truePositionX = positionX - emptyCellsInPieceSchemaOffset;
+                GameGrid futureGrid = gameGrid.getFutureGridWithCurrentPieceInFinalPosition(pieceClone, truePositionX);
 
-//                game.setGameGrid(futureGrid);
+                game.setGameGrid(futureGrid);
+
+                double fitness = getFitness(futureGrid);
 
                 if (fitness > bestFitness) {
                     bestFitness = fitness;
                     bestRotationCount = rotationIter;
-                    bestPositionOnRow = positionX;
+                    bestPositionOnRow = truePositionX;
                 }
             }
 
             pieceClone.rotateRight();
         }
 
-//        game.setGameGrid(gameGrid);
+        game.setGameGrid(gameGrid);
 
         // Determine the actions based on the above stats.
 
@@ -113,9 +125,9 @@ public class GeneticAlgoAgent extends Agent {
         int clearedLinesLastCycle = getCurrentCompleteRowIndices(gameGrid);
         int[] gameGridColumnHeights = getGameGridColumnHeights(gameGrid);
 
-        score += weightForHeight * Arrays.stream(gameGridColumnHeights).sum();
-        score += weightForHoles * getGameGridHoleCount(gameGrid);
-        score += weightForBumpiness * getGameGridHorizontalBumpiness(gameGridColumnHeights);
+        score -= weightForHeight * Arrays.stream(gameGridColumnHeights).sum();
+        score -= weightForHoles * getGameGridHoleCount(gameGrid);
+        score -= weightForBumpiness * getGameGridHorizontalBumpiness(gameGridColumnHeights);
         score += weightForLineClear * clearedLinesLastCycle;
 
         return score;
