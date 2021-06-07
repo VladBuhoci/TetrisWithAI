@@ -19,7 +19,7 @@ public abstract class Constants {
 
     public static final long GAME_START_INITIAL_DELAY = 300L;
 
-    public static final double SCORE_PER_PIECE_DOWN_MOVE = 0.01;
+    public static final double SCORE_PER_PIECE_DOWN_MOVE = 0.001;
 
     //======================================================================
     //      UI settings:
@@ -36,16 +36,16 @@ public abstract class Constants {
     public static final Color EMPTY_CELL_COLOUR = Color.darkGray;
     public static final Color BACKGROUND_COLOUR_LIGHT = Color.lightGray;
 
-    public static final int  WINDOW_WIDTH = 260 + CELL_COUNT_HORIZONTALLY * CELL_SIZE;
-    public static final int WINDOW_HEIGHT = 180 +   CELL_COUNT_VERTICALLY * CELL_SIZE;
+    public static final int  WINDOW_WIDTH = 300 + CELL_COUNT_HORIZONTALLY * CELL_SIZE;
+    public static final int WINDOW_HEIGHT = 200 +   CELL_COUNT_VERTICALLY * CELL_SIZE;
 
     // How much of the total window height should be allocated for each empty area (up and bottom).
-    public static final double TOP_FILLER_SPACE_HEIGHT_PERCENTAGE = 0.1;
-    public static final double BOTTOM_FILLER_SPACE_HEIGHT_PERCENTAGE = 0.1;
+    public static final double TOP_FILLER_SPACE_HEIGHT_PERCENTAGE = 0.2;
+    public static final double BOTTOM_FILLER_SPACE_HEIGHT_PERCENTAGE = 0.2;
 
     // How much of the total window width should be allocated for each side area (west/stats panel and east/future pieces panel).
-    public static final double WEST_SPACE_WIDTH_PERCENTAGE = 0.2;
-    public static final double EAST_SPACE_WIDTH_PERCENTAGE = 0.2;
+    public static final double WEST_SPACE_WIDTH_PERCENTAGE = 0.3;
+    public static final double EAST_SPACE_WIDTH_PERCENTAGE = 0.3;
 
     //======================================================================
     //      AI settings:

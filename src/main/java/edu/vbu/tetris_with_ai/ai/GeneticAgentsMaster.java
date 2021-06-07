@@ -77,6 +77,10 @@ public class GeneticAgentsMaster extends AgentsMaster {
         addAgent(topGame, topAgent);
         resetGame(topGame, "Tetris for random AI #" + topAgent.getId());
 
+        LOG.info("Games ordered by their score: [{}]", () -> sortedGames);
+        LOG.info("Agents ordered by game score: [{}]", () -> sortedAgents);
+        LOG.info("Top game of generation #" + currentGeneration + " is '" + topAgent.getName() + "'");
+
         // Breed the rest of the agent population (randomly) based on the current remaining generation half.
         for (int k = 1; k < agentCount; k++) {
             Pair<GeneticAlgoAgent, GeneticAlgoAgent> randomAgentPairFromPopulation = getRandomAgentPairFromPopulation(sortedAgents);

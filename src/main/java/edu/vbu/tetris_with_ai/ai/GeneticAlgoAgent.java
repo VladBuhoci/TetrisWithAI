@@ -40,20 +40,10 @@ public class GeneticAlgoAgent extends Agent {
         weightForBumpiness = getRandomWeight();
         weightForLineClear = getRandomWeight();
 
-//        weightForHeight    = 0.10531331367607177;
-//        weightForHoles     = 0.16308920919262127;
-//        weightForBumpiness = 0.46243821049196820;
-//        weightForLineClear = 0.07588886641364434;
-
-//        weightForHeight = 1;
-//        weightForHoles = 1;
-//        weightForBumpiness = 1;
-//        weightForLineClear = 1;
-
-        weightForHeight = 0.15815871538732607;
-        weightForHoles = 0.6215055316235667;
-        weightForBumpiness = 0.6051368694870694;
-        weightForLineClear = 0.44280394714305427;
+//        weightForHeight = 0.5580935497187252;
+//        weightForHoles = 0.5297341239323762;
+//        weightForBumpiness = 0.2627401585737541;
+//        weightForLineClear = 0.7893537470350246;
 
         if (logGeneratedWeights) {
             logWeights();
@@ -83,7 +73,7 @@ public class GeneticAlgoAgent extends Agent {
                 int truePositionX = positionX - emptyCellsInPieceSchemaOffset;
                 GameGrid futureGrid = gameGrid.getFutureGridWithCurrentPieceInFinalPosition(pieceClone, truePositionX);
 
-                game.setGameGrid(futureGrid);
+//                game.setGameGrid(futureGrid);
 
                 double fitness = getFitness(futureGrid);
 
@@ -97,7 +87,7 @@ public class GeneticAlgoAgent extends Agent {
             pieceClone.rotateRight();
         }
 
-        game.setGameGrid(gameGrid);
+//        game.setGameGrid(gameGrid);
 
         // Determine the actions based on the above stats.
 
@@ -142,19 +132,7 @@ public class GeneticAlgoAgent extends Agent {
     public GeneticAlgoAgent crossOver(GeneticAlgoAgent otherParent, TetrisGame agent1Game, TetrisGame agent2Game) {
         GeneticAlgoAgent child = new GeneticAlgoAgent(TetrisUtils.getNextAgentID(), false);
 
-        // Choose the weights for the child, from this agent or the other one, randomly.
-//        child.weightForHeight = RANDOM.nextBoolean() ? this.weightForHeight : otherParent.weightForHeight;
-//        child.weightForHoles = RANDOM.nextBoolean() ? this.weightForHoles : otherParent.weightForHoles;
-//        child.weightForBumpiness = RANDOM.nextBoolean() ? this.weightForBumpiness : otherParent.weightForBumpiness;
-//        child.weightForLineClear = RANDOM.nextBoolean() ? this.weightForLineClear : otherParent.weightForLineClear;
-
-//        double scoreRatio = (double) agent1Game.getScore() / agent2Game.getScore();
-
         {
-//            double weightRatio = child.weightForHeight / otherParent.weightForHeight;
-
-            // 4 : 1 --> 3 & 1
-
             child.weightForHeight = (this.weightForHeight + otherParent.weightForHeight) / 2.0;
         }
         {

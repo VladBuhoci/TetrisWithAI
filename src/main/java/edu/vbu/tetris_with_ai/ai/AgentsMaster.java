@@ -142,7 +142,11 @@ public class AgentsMaster {
     }
 
     private void stopSpecificAgent(Thread agentThread) {
-        agentsAndRunFlags.get(agentThread).compareAndSet(true, false);
+        AtomicBoolean agentThreadRunFlag = agentsAndRunFlags.get(agentThread);
+
+        if (agentThreadRunFlag != null) {
+            agentThreadRunFlag.compareAndSet(true, false);
+        }
     }
 
     private synchronized boolean checkAreAllGamesOver() {
