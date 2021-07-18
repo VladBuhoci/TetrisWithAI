@@ -1,6 +1,5 @@
 package edu.vbu.tetris_with_ai.ui;
 
-import com.sun.istack.internal.Nullable;
 import edu.vbu.tetris_with_ai.core.Position;
 import edu.vbu.tetris_with_ai.core.shapes.Shape;
 import edu.vbu.tetris_with_ai.core.shapes.Shapes;
@@ -314,7 +313,7 @@ public class GameGrid extends JPanel {
         return clone;
     }
 
-    private void resetFallingPiece(@Nullable Shape newFallingPiece) {
+    private void resetFallingPiece(Shape newFallingPiece) {
         this.currFallPiece = newFallingPiece;
         this.fallingPieceRowIndex = 0;  // new piece starts at the top of the grid.
         this.fallingPieceColumnIndex = gridCells[0].length / 2 - 1; // new piece starts in the middle of the horizontal line.

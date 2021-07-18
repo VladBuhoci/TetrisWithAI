@@ -1,7 +1,7 @@
 package edu.vbu.tetris_with_ai.ai;
 
 import edu.vbu.tetris_with_ai.core.TetrisGame;
-import javafx.util.Pair;
+import edu.vbu.tetris_with_ai.utils.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -85,8 +85,8 @@ public class GeneticAgentsMaster extends AgentsMaster {
         for (int k = 1; k < agentCount; k++) {
             Pair<GeneticAlgoAgent, GeneticAlgoAgent> randomAgentPairFromPopulation = getRandomAgentPairFromPopulation(sortedAgents);
 
-            GeneticAlgoAgent agent1 = randomAgentPairFromPopulation.getKey();
-            GeneticAlgoAgent agent2 = randomAgentPairFromPopulation.getValue();
+            GeneticAlgoAgent agent1 = randomAgentPairFromPopulation.getLeftValue();
+            GeneticAlgoAgent agent2 = randomAgentPairFromPopulation.getRightValue();
 
             TetrisGame nextGame = gameIterator.next();
             GeneticAlgoAgent childAgent = agent1.crossOver(agent2, getGameByAgent(gamesAndAgents, agent1), getGameByAgent(gamesAndAgents, agent2));
